@@ -1,7 +1,7 @@
 import axios from "axios";
-import {type Prompt, promptToString} from "./prompt-constructor.ts";
-import {clearResponse} from "./response-format-constructor.ts";
-import {z} from "zod";
+import { type Prompt, promptToString } from "./prompt-constructor.ts";
+import { clearResponse } from "./response-format-constructor.ts";
+import { z } from "zod";
 
 export class CustomLLMService {
     private readonly baseUrl: string;
@@ -12,14 +12,15 @@ export class CustomLLMService {
         this.apiKey = apiKey;
     }
 
-    async generateResponse({_prompt, provider = 'gemini', randomProvider = false}: {
+    async generateResponse<T = any>({ _prompt, provider = 'gemini', randomProvider = false }: {
         _prompt: Prompt,
         provider?: string,
         randomProvider?: boolean,
-    }) {
+    }): Promise<T> {
         try {
             const prompt = promptToString(_prompt);
-            console.error(`<< LLM REQUEST >>\n${prompt}\n---------\n\n`);
+            // Логируем запрос синим цветом
+            console.log(`\x1b[34m<< LLM REQUEST >>\n${prompt}\n---------\n\n\x1b[0m`);
             const response = await axios.post(this.baseUrl, {
                 prompt: prompt,
                 provider: provider,
@@ -38,10 +39,11 @@ export class CustomLLMService {
 
             const result = JSON.parse(responseRaw);
 
-            // verify response format and throw error if not valid
+            // Проверяем формат ответа и выбрасываем ошибку, если он невалиден
             _prompt.responseSchema.parse(result);
 
-            console.error(`<< LLM RESPONSE >>\n${responseRaw}\n---------\n\n`);
+            // Логируем ответ зелёным цветом
+            console.log(`\x1b[32m<< LLM RESPONSE >>\n${responseRaw}\n---------\n\n\x1b[0m`);
             return result;
         } catch (error) {
             if (error instanceof z.ZodError) {
