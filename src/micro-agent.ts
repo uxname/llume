@@ -54,6 +54,10 @@ Do not send any other data. Do not send markdown.`;
         };
     }
 
+    toString(): string {
+        return JSON.stringify(this.toInfo());
+    }
+
     parseResponse(response: unknown): MicroAgentResponse<T> {
         try {
             const parsed = this.responseSchema.parse(response);

@@ -1,6 +1,6 @@
-import { CustomLLMService } from "./customLLMService.ts";
-import { MicroAgent, type MicroAgentConfig } from './micro-agent.ts';
-import { z } from "zod";
+import {CustomLLMService} from "./customLLMService.ts";
+import {MicroAgent, type MicroAgentConfig} from './micro-agent.ts';
+import {z} from "zod";
 
 interface CalculatorResponse {
     value: number;
@@ -13,7 +13,7 @@ class Calculator extends MicroAgent<CalculatorResponse> {
             name: 'Калькулятор',
             description: 'Вычисляет математические выражения',
             template: 'Ты точный калькулятор, посчитай и выдай результат следующего выражения: {evaluation}',
-            vars: { evaluation },
+            vars: {evaluation},
             responseSchema: z.object({
                 value: z.number().describe('Результат выражения'),
                 errors: z.array(z.string()).describe('Список ошибок, если есть'),
@@ -35,6 +35,8 @@ async function main() {
     );
 
     const calculator = new Calculator('2 + 2 * 2');
+    console.log('Calculator agent info:', calculator.toString())
+
     const result = await calculator.execute(llmService, 'gemini');
 
     console.log(result.value);
