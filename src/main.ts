@@ -3,7 +3,7 @@ import { MicroAgent, type MicroAgentConfig } from './micro-agent.ts';
 import { z } from "zod";
 
 interface CalculatorResponse {
-    result: number;
+    value: number;
     errors: string[];
 }
 
@@ -15,7 +15,7 @@ class Calculator extends MicroAgent<CalculatorResponse> {
             template: 'Ты точный калькулятор, посчитай и выдай результат следующего выражения: {evaluation}',
             vars: { evaluation },
             responseSchema: z.object({
-                result: z.number().describe('Результат выражения'),
+                value: z.number().describe('Результат выражения'),
                 errors: z.array(z.string()).describe('Список ошибок, если есть'),
             })
         };
@@ -37,7 +37,7 @@ async function main() {
     const calculator = new Calculator('2 + 2 * 2');
     const result = await calculator.execute(llmService, 'gemini');
 
-    console.log(result.result);
+    console.log(result.value);
 }
 
 main();
