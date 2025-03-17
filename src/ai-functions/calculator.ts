@@ -1,4 +1,4 @@
-import {MicroAgent} from "./micro-agent.ts";
+import {AiFunction} from "./ai-function.ts";
 import {z} from "zod";
 import type {BaseLLMProvider} from "../llm-provider/base-llm-provider.ts";
 
@@ -7,7 +7,7 @@ interface CalculatorResponse {
     errors: string[];
 }
 
-export class Calculator extends MicroAgent<CalculatorResponse> {
+export class Calculator extends AiFunction<CalculatorResponse> {
     constructor(
         llmProvider?: BaseLLMProvider
     ) {

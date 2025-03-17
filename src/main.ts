@@ -1,6 +1,6 @@
 import {Ai0Provider} from "./llm-provider/ai0-provider.ts";
-import {Calculator} from "./agents/calculator.ts";
-import {AgentRouter} from "./agents/router.ts";
+import {Calculator} from "./ai-functions/calculator.ts";
+import {AgentRouter} from "./ai-functions/router.ts";
 
 const llmProvider = new Ai0Provider(
     'https://ai0.uxna.me/',

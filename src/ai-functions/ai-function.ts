@@ -13,7 +13,7 @@ interface ConstructorParams<T = any> {
     llmProvider?: BaseLLMProvider;
 }
 
-export abstract class MicroAgent<T = any> {
+export abstract class AiFunction<T = any> {
     public readonly name: string;
     public readonly description: string;
     public readonly template: string;

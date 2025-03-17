@@ -1,4 +1,4 @@
-import {MicroAgent} from "./micro-agent.ts";
+import {AiFunction} from "./ai-function.ts";
 import {z} from "zod";
 import type {BaseLLMProvider} from "../llm-provider/base-llm-provider.ts";
 
@@ -14,7 +14,7 @@ interface AgentWithErrors {
 
 type AgentRouterResponse = AgentWithAgent | AgentWithErrors;
 
-export class AgentRouter extends MicroAgent<AgentRouterResponse> {
+export class AgentRouter extends AiFunction<AgentRouterResponse> {
     constructor(
         llmProvider?: BaseLLMProvider
     ) {
@@ -36,7 +36,7 @@ export class AgentRouter extends MicroAgent<AgentRouterResponse> {
         });
     }
 
-    async route(task: string, availableAgents: MicroAgent[]) {
+    async route(task: string, availableAgents: AiFunction[]) {
         return this.execute({
             task,
             agents: JSON.stringify(availableAgents.map(agent => agent.toString()))
