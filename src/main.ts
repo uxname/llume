@@ -1,88 +1,30 @@
 import {Ai0Provider} from "./llm-provider/ai0-provider.ts";
-import {MicroAgent} from './micro-agent.ts';
-import {z} from "zod";
-
-interface CalculatorResponse {
-    value: number;
-    errors: string[];
-}
-
-interface AgentWithAgent {
-    agent: string;
-    errors?: never;
-}
-
-interface AgentWithErrors {
-    agent?: never;
-    errors: string[];
-}
-
-type AgentRouterResponse = AgentWithAgent | AgentWithErrors;
+import {Calculator} from "./agents/calculator.ts";
+import {AgentRouter} from "./agents/router.ts";
 
 const llmProvider = new Ai0Provider(
     'https://ai0.uxna.me/',
     '123321ai'
 );
 
-class Calculator extends MicroAgent<CalculatorResponse> {
-    constructor() {
-        super({
-            name: 'Калькулятор',
-            description: 'Вычисляет математические выражения',
-            template: 'Ты точный калькулятор, посчитай и выдай результат следующего выражения: {evaluation}',
-            responseSchema: z.object({
-                value: z.number().describe('Результат выражения'),
-                errors: z.array(z.string()).describe('Список ошибок, если есть'),
-            }),
-            llmProvider
-        });
-    }
-}
-
-class AgentRouter extends MicroAgent<AgentRouterResponse> {
-    constructor() {
-        super({
-            name: 'Агент-роутер',
-            description: 'Определяет лучший агент для выполнения задачи',
-            template: 'Твоя задача выбрать наиболее подходящего агента для выполнения задачи. Вот задача: {task}, вот список доступных агентов: {agents}',
-            responseSchema: z.union([
-                z.object({
-                    agent: z.string().describe('Имя выбранного агента'),
-                    errors: z.undefined(), // Убедитесь, что errors не определено
-                }),
-                z.object({
-                    agent: z.undefined(), // Убедитесь, что agent не определено
-                    errors: z.array(z.string()).describe('Список ошибок, если есть, например если подходящего агента нет'),
-                }),
-            ]),
-            llmProvider
-        });
-    }
-
-    async route(task: string, availableAgents: MicroAgent[]) {
-        return this.execute({
-            task,
-            agents: JSON.stringify(availableAgents.map(agent => agent.toString()))
-        });
-    }
-}
-
 async function main() {
-    const geminiOptions = {provider: 'gemini'};
-
-    // const query = 'Какая погода в Минске обычно летом?';
-    const query = 'сколько будет 9 в квадрате?';
+    const query1 = 'Какая погода в Минске обычно летом?';
+    const query2 = 'сколько будет 9 в квадрате?';
 
     // Create agents with LLM service in constructor
-    const calculator = new Calculator();
-    const agentRouter = new AgentRouter();
+    const calculator = new Calculator(llmProvider);
+    const agentRouter = new AgentRouter(llmProvider);
 
     // Execute with variables as parameters
-    const calculatorResult = await calculator.execute({evaluation: query});
-    const agentRouterResult = await agentRouter.route(query, [calculator]);
+    const calculatorResult1 = await calculator.execute({evaluation: query1});
+    const calculatorResult2 = await calculator.execute({evaluation: query2});
+    const agentRouterResult1 = await agentRouter.route(query1, [calculator]);
+    const agentRouterResult2 = await agentRouter.route(query2, [calculator]);
 
-    console.log('calculatorResult', calculatorResult.value);
-    console.log('agentRouterResult', agentRouterResult.agent);
+    console.log('calculatorResult1', calculatorResult1.value);
+    console.log('calculatorResult2', calculatorResult2.value);
+    console.log('agentRouterResult', agentRouterResult1.agent);
+    console.log('agentRouterResult', agentRouterResult2.agent);
 }
 
 main();

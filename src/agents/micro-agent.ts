@@ -1,5 +1,5 @@
 import {z} from "zod";
-import type {BaseLLMProvider} from "./llm-provider/base-llm-provider.ts";
+import type {BaseLLMProvider} from "../llm-provider/base-llm-provider.ts";
 import {zodToJsonSchema} from "zod-to-json-schema";
 
 export type TemplateVars = { [key: string]: string };
