@@ -3,17 +3,29 @@ import { z } from "zod";
 
 export type TemplateVars = { [key: string]: string };
 export type MicroAgentResponse<T> = T & { _raw?: unknown };
+export type MicroAgentConfig<T> = {
+    name: string;
+    description: string;
+    template: string;
+    vars: TemplateVars;
+    responseSchema: z.ZodType<T>;
+};
 
 export abstract class MicroAgent<T = any> {
-    protected constructor(
-        public readonly name: string,
-        public readonly description: string,
-        public readonly template: string,
-        public readonly vars: TemplateVars,
-        public readonly responseSchema: z.ZodType<T>
-    ) {}
+    public readonly name: string;
+    public readonly description: string;
+    public readonly template: string;
+    public readonly vars: TemplateVars;
+    public readonly responseSchema: z.ZodType<T>;
 
-    // Factory method for easier subclass instantiation
+    protected constructor(config: MicroAgentConfig<T>) {
+        this.name = config.name;
+        this.description = config.description;
+        this.template = config.template;
+        this.vars = config.vars;
+        this.responseSchema = config.responseSchema;
+    }
+
     static create<R, Args extends any[]>(
         this: new (...args: Args) => MicroAgent<R>,
         ...args: Args
@@ -21,7 +33,6 @@ export abstract class MicroAgent<T = any> {
         return new this(...args);
     }
 
-    // For chaining API calls
     toPrompt(): string {
         const responseSchema = JSON.stringify(generateSchema(this.responseSchema));
 
@@ -43,7 +54,6 @@ Do not send any other data. Do not send markdown.`;
         };
     }
 
-    // Parse and validate response, returning typed result
     parseResponse(response: unknown): MicroAgentResponse<T> {
         try {
             const parsed = this.responseSchema.parse(response);
@@ -53,7 +63,6 @@ Do not send any other data. Do not send markdown.`;
         }
     }
 
-    // Simple validation check
     validateResponse(response: unknown): boolean {
         try {
             this.responseSchema.parse(response);
@@ -63,7 +72,6 @@ Do not send any other data. Do not send markdown.`;
         }
     }
 
-    // Add helper methods for different LLM services
     async execute<R = T>(
         llmService: { generateResponse: (params: any) => Promise<any> },
         provider: string = 'default',
@@ -78,50 +86,35 @@ Do not send any other data. Do not send markdown.`;
         return this.parseResponse(response);
     }
 
-    // Create a new instance with updated variables
     withVars(additionalVars: TemplateVars): this {
-        const Constructor = this.constructor as new (
-            name: string,
-            description: string,
-            template: string,
-            vars: TemplateVars,
-            responseSchema: z.ZodType<T>
-        ) => this;
+        const Constructor = this.constructor as new (config: MicroAgentConfig<T>) => this;
 
-        return new Constructor(
-            this.name,
-            this.description,
-            this.template,
-            { ...this.vars, ...additionalVars },
-            this.responseSchema
-        );
+        return new Constructor({
+            name: this.name,
+            description: this.description,
+            template: this.template,
+            vars: { ...this.vars, ...additionalVars },
+            responseSchema: this.responseSchema
+        });
     }
 
-    // Update any property and return new instance
     update(props: Partial<{
         name: string;
         description: string;
         template: string;
         vars: TemplateVars;
     }>): this {
-        const Constructor = this.constructor as new (
-            name: string,
-            description: string,
-            template: string,
-            vars: TemplateVars,
-            responseSchema: z.ZodType<T>
-        ) => this;
+        const Constructor = this.constructor as new (config: MicroAgentConfig<T>) => this;
 
-        return new Constructor(
-            props.name ?? this.name,
-            props.description ?? this.description,
-            props.template ?? this.template,
-            props.vars ?? this.vars,
-            this.responseSchema
-        );
+        return new Constructor({
+            name: props.name ?? this.name,
+            description: props.description ?? this.description,
+            template: props.template ?? this.template,
+            vars: props.vars ?? this.vars,
+            responseSchema: this.responseSchema
+        });
     }
 
-    // Helper method to get formatted template
     protected addVariablesToTemplate(prompt: string, additionalVars?: TemplateVars): string {
         const allVars = { ...this.vars, ...(additionalVars || {}) };
 
