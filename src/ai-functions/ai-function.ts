@@ -19,6 +19,7 @@ export abstract class AiFunction<T = any> {
     public readonly template: string;
     public readonly responseSchema: z.ZodType<T>;
     protected readonly llmProvider: BaseLLMProvider | undefined;
+    protected readonly varsSchema: z.ZodType<TemplateVars>;
 
     protected constructor(data: ConstructorParams) {
         this.name = data.name;
@@ -26,6 +27,15 @@ export abstract class AiFunction<T = any> {
         this.template = data.template;
         this.responseSchema = data.responseSchema;
         this.llmProvider = data.llmProvider;
+
+        // Create a schema to validate template variables by extracting variable names from the template
+        const requiredKeys = this.extractVariableNames(this.template);
+        this.varsSchema = z.object(
+            requiredKeys.reduce((acc, key) => {
+                acc[key] = z.string().min(1, `Variable '${key}' cannot be empty`);
+                return acc;
+            }, {} as Record<string, z.ZodString>)
+        );
     }
 
     toPrompt(vars: TemplateVars = {}): string {
@@ -64,6 +74,13 @@ Do not send any other data. Do not send markdown.`;
     }
 
     async execute(vars: TemplateVars, llmProvider?: BaseLLMProvider): Promise<MicroAgentResponse<T>> {
+        // Validate input variables against the schema
+        try {
+            this.validateVars(vars);
+        } catch (error) {
+            throw new Error(`Variable validation failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+
         const provider = llmProvider || this.llmProvider;
         if (!provider) {
             throw new Error('No LLM provider found');
@@ -86,5 +103,16 @@ Do not send any other data. Do not send markdown.`;
             console.warn(`Key "${key}" not found in vars.`);
             return match;
         });
+    }
+
+    protected validateVars(vars: TemplateVars): void {
+        this.varsSchema.parse(vars);
+    }
+
+    private extractVariableNames(template: string): string[] {
+        const matches = template.match(/\{(\w+)}/g) || [];
+        return matches
+            .map(match => match.substring(1, match.length - 1))
+            .filter(key => key !== 'schema'); // Exclude the 'schema' variable which is added internally
     }
 }
