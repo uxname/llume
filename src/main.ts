@@ -6,6 +6,7 @@ import type {AiFunction} from "./ai-functions/ai-function.ts";
 import {CodeLoader, type CodeLoaderResponse} from "./ai-functions/code-loader.ts";
 import {TextFileTool} from "./tools/text-file-tool.ts";
 import * as path from "node:path";
+import {CodeRefactorer} from "./ai-functions/code-refactorer.ts";
 
 const llmProvider = new Ai0Provider(
     'https://ai0.uxna.me/',
@@ -62,7 +63,7 @@ async function detectCodeReferences(filePath: string, importReferences: string):
 async function listAllReferences(accumulator: string[], filepath: string): Promise<string[]> {
     console.log(`Processing file: ${filepath}`);
     console.log('Accumulator:', accumulator);
-    let result  = await detectCodeReferences(filepath, JSON.stringify(accumulator));
+    let result = await detectCodeReferences(filepath, JSON.stringify(accumulator));
 
     if (result.importReferences.length > 0) {
         accumulator = accumulator.concat(result.importReferences);
@@ -75,8 +76,38 @@ async function listAllReferences(accumulator: string[], filepath: string): Promi
 
 async function main2() {
     const filePath = path.join(import.meta.dirname, '..', 'package.json');
-    const allReferences = await listAllReferences([], filePath);
+    // const allReferences = await listAllReferences([], filePath);
+    const allReferences = [
+        "/home/dex/Desktop/ai0-agent/src/main.ts", "/home/dex/Desktop/ai0-agent/src/llm-provider/ai0-provider.ts",
+        "/home/dex/Desktop/ai0-agent/src/ai-functions/calculator.ts", "/home/dex/Desktop/ai0-agent/src/ai-functions/router.ts",
+        "/home/dex/Desktop/ai0-agent/src/ai-functions/weather.ts",
+        // "/home/dex/Desktop/ai0-agent/src/ai-functions/ai-function.ts",
+        // "/home/dex/Desktop/ai0-agent/src/ai-functions/code-loader.ts", "/home/dex/Desktop/ai0-agent/src/tools/text-file-tool.ts",
+        // "/home/dex/Desktop/ai0-agent/src/ai-functions/code-refactorer.ts", "/home/dex/Desktop/ai0-agent/src/llm-provider/base-llm-provider.ts"
+    ];
+    // const allReferences = [
+    //     "/home/dex/Desktop/ai0-agent/src/main.ts"
+    // ];
     console.log(allReferences);
+
+    const result = [];
+    for (const reference of allReferences) {
+        const fileContent = await TextFileTool.load(reference);
+        result.push({
+            filePath: reference,
+            content: fileContent
+        });
+    }
+
+    const codeRefactorer = new CodeRefactorer(llmProvider);
+
+    const refactoredCode = await codeRefactorer.execute({
+        code: JSON.stringify(result)
+    });
+
+    console.log(JSON.stringify(refactoredCode, null, 2))
+
+    await TextFileTool.save('Project.txt', JSON.stringify(refactoredCode, null, 2));
 }
 
 

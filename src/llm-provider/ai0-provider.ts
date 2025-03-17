@@ -21,7 +21,7 @@ export class Ai0Provider extends BaseLLMProvider {
     public async query<T = any>(params: LLMRequestParams): Promise<T> {
         return super.query({
             prompt: params.prompt,
-            log: false
+            log: true
         });
     }
 
@@ -39,6 +39,8 @@ export class Ai0Provider extends BaseLLMProvider {
                     'Authorization': this.apiKey
                 }
             });
+
+            console.error('!!!!!!!!!', response.data.text)
 
             let responseRaw = this.clearResponse(response.data.text)
 
