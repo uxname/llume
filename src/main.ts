@@ -3,6 +3,9 @@ import {Calculator} from "./ai-functions/calculator.ts";
 import {AgentRouter} from "./ai-functions/router.ts";
 import {Weather} from "./ai-functions/weather.ts";
 import type {AiFunction} from "./ai-functions/ai-function.ts";
+import {CodeLoader, type CodeLoaderResponse} from "./ai-functions/code-loader.ts";
+import {TextFileTool} from "./tools/text-file-tool.ts";
+import * as path from "node:path";
 
 const llmProvider = new Ai0Provider(
     'https://ai0.uxna.me/',
@@ -44,4 +47,38 @@ async function main() {
 
 }
 
-main();
+const codeLoader = new CodeLoader(llmProvider);
+
+async function detectCodeReferences(filePath: string, importReferences: string): Promise<CodeLoaderResponse> {
+    const fileContent = await TextFileTool.load(filePath);
+
+    return await codeLoader.execute({
+        code: fileContent,
+        filePath,
+        importReferences
+    });
+}
+
+async function listAllReferences(accumulator: string[], filepath: string): Promise<string[]> {
+    console.log(`Processing file: ${filepath}`);
+    console.log('Accumulator:', accumulator);
+    let result  = await detectCodeReferences(filepath, JSON.stringify(accumulator));
+
+    if (result.importReferences.length > 0) {
+        accumulator = accumulator.concat(result.importReferences);
+        for (const reference of result.importReferences) {
+            accumulator = await listAllReferences(accumulator, reference);
+        }
+    }
+    return accumulator;
+}
+
+async function main2() {
+    const filePath = path.join(import.meta.dirname, '..', 'package.json');
+    const allReferences = await listAllReferences([], filePath);
+    console.log(allReferences);
+}
+
+
+main2();
+// main();

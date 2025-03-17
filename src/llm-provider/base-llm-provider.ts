@@ -15,6 +15,8 @@ export abstract class BaseLLMProvider {
         if (log) {
             this.logResponse(response);
         }
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
         return response;
     }
 
