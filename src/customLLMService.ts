@@ -1,7 +1,7 @@
 import axios from "axios";
-import { type Prompt, promptToString } from "./prompt-constructor.ts";
 import { clearResponse } from "./response-format-constructor.ts";
 import { z } from "zod";
+import type {MicroAgent} from "./micro-agent.ts";
 
 export class CustomLLMService {
     private readonly baseUrl: string;
@@ -12,13 +12,13 @@ export class CustomLLMService {
         this.apiKey = apiKey;
     }
 
-    async generateResponse<T = any>({ _prompt, provider = 'gemini', randomProvider = false }: {
-        _prompt: Prompt,
+    async generateResponse<T = any>({ microAgent, provider = 'gemini', randomProvider = false }: {
+        microAgent: MicroAgent,
         provider?: string,
         randomProvider?: boolean,
     }): Promise<T> {
         try {
-            const prompt = promptToString(_prompt);
+            const prompt = microAgent.toPrompt();
             // Логируем запрос синим цветом
             console.log(`\x1b[34m<< LLM REQUEST >>\n${prompt}\n---------\n\n\x1b[0m`);
             const response = await axios.post(this.baseUrl, {
@@ -40,7 +40,7 @@ export class CustomLLMService {
             const result = JSON.parse(responseRaw);
 
             // Проверяем формат ответа и выбрасываем ошибку, если он невалиден
-            _prompt.responseSchema.parse(result);
+            microAgent.responseSchema.parse(result);
 
             // Логируем ответ зелёным цветом
             console.log(`\x1b[32m<< LLM RESPONSE >>\n${responseRaw}\n---------\n\n\x1b[0m`);
