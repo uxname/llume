@@ -1,6 +1,6 @@
-import {generateSchema} from "./response-format-constructor.ts";
 import {z} from "zod";
 import type {BaseLLMProvider} from "./llm-provider/base-llm-provider.ts";
+import {zodToJsonSchema} from "zod-to-json-schema";
 
 export type TemplateVars = { [key: string]: string };
 export type MicroAgentResponse<T> = T & { _raw?: unknown };
@@ -29,7 +29,7 @@ export abstract class MicroAgent<T = any> {
     }
 
     toPrompt(vars: TemplateVars = {}): string {
-        const responseSchema = JSON.stringify(generateSchema(this.responseSchema));
+        const responseSchema = JSON.stringify(zodToJsonSchema(this.responseSchema));
 
         const promptTemplate = `${this.template}
 Answer format json should according to the following JSON schema: {schema}
@@ -46,7 +46,7 @@ Do not send any other data. Do not send markdown.`;
             name: this.name,
             description: this.description,
             template: this.template,
-            responseSchema: generateSchema(this.responseSchema)
+            responseSchema: zodToJsonSchema(this.responseSchema)
         };
     }
 
