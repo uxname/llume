@@ -18,6 +18,13 @@ export class Ai0Provider extends BaseLLMProvider {
         this.apiKey = apiKey;
     }
 
+    public async query<T = any>(params: LLMRequestParams): Promise<T> {
+        return super.query({
+            prompt: params.prompt,
+            log: false
+        });
+    }
+
     protected async generateResponse<T = any>(params: Ai0RequestParams): Promise<T> {
         const {prompt, provider = 'gemini', randomProvider = false} = params;
 
