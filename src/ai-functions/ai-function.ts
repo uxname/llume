@@ -73,7 +73,7 @@ Do not send any other data. Do not send markdown.`;
         });
 
         // log request and response
-        console.log(`Execute [${this.name}]:\n${JSON.stringify(vars)}\nResponse: ${JSON.stringify(response)}\n`);
+        // console.log(`Execute [${this.name}]:\n${JSON.stringify(vars)}\nResponse: ${JSON.stringify(response)}\n`);
 
         return this.parseResponse(response);
     }
