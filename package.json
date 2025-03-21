@@ -2,10 +2,13 @@
   "name": "ai0-agent",
   "type": "module",
   "scripts": {
-    "start": "bun run src/main.ts"
+    "start": "bun run src/main.ts",
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest watch --config vitest.config.ts"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "vitest": "^3.0.9"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
