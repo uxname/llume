@@ -6,7 +6,7 @@ const sum = (a: number, b: number) => a + b;
 test('should work', async () => {
     const ai0Provider = new Ai0Provider(
         'https://ai0.uxna.me/',
-        '123321ai'
+        process.env.AI0_API_KEY!
     );
     expect(ai0Provider.name).toBe('AI0');
 
