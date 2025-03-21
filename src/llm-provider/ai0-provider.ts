@@ -40,8 +40,6 @@ export class Ai0Provider extends BaseLLMProvider {
                 }
             });
 
-            console.error('!!!!!!!!!', response.data.text)
-
             let responseRaw = this.clearResponse(response.data.text)
 
             return JSON.parse(responseRaw);

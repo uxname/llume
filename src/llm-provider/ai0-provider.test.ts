@@ -1,7 +1,16 @@
-import { expect, test } from 'vitest'
+import {expect, test} from 'vitest'
+import {Ai0Provider} from "./ai0-provider.ts";
 
 const sum = (a: number, b: number) => a + b;
 
-test('adds 1 + 2 to equal 3', () => {
-    expect(sum(1, 2)).toBe(3)
+test('should work', async () => {
+    const ai0Provider = new Ai0Provider(
+        'https://ai0.uxna.me/',
+        '123321ai'
+    );
+    expect(ai0Provider.name).toBe('AI0');
+
+    const prompt = 'What is 2 + 2? Answer format should be the JSON {"result": 4}';
+    const response = await ai0Provider.query({prompt});
+    expect(response.result).toBe(4);
 })
