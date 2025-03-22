@@ -41,13 +41,12 @@ export class Container {
         return parsedResponse;
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        console.error(
+        console.warn(
           `Attempt ${attempt} failed for "${aiFunctionName}": ${lastError.message}`,
         );
-        if (attempt === 5) {
+        if (attempt === MAX_ATTEMPTS) {
           throw lastError;
         }
-        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
       }
     }
 
