@@ -1,5 +1,4 @@
 import { describe, it, expect } from 'vitest';
-import { Ai0Provider } from './llm-provider/ai0-provider.ts';
 import { Calculator } from './ai-functions/calculator.ts';
 import { AgentRouter } from './ai-functions/router.ts';
 import { Weather } from './ai-functions/weather.ts';
@@ -7,9 +6,10 @@ import { CodeLoader } from './ai-functions/code-loader.ts';
 import { TextFileTool } from './tools/text-file-tool.ts';
 import { CodeRefactorer } from './ai-functions/code-refactorer.ts';
 import * as path from 'node:path';
+import {Ai0} from "./ai-execution-engine/engines/ai0/ai0.ts";
 
 describe('AI Functions and Routing', () => {
-    const llmProvider = new Ai0Provider('https://ai0.uxna.me/', process.env.AI0_API_KEY!);
+    const llmProvider = new Ai0('https://ai0.uxna.me/', process.env.AI0_API_KEY!);
     const calculator = new Calculator(llmProvider);
     const weather = new Weather(llmProvider);
     const agentRouter = new AgentRouter(llmProvider);
@@ -51,7 +51,7 @@ describe('AI Functions and Routing', () => {
 });
 
 describe('Code Loader and References', () => {
-    const llmProvider = new Ai0Provider('https://ai0.uxna.me/', process.env.AI0_API_KEY!);
+    const llmProvider = new Ai0('https://ai0.uxna.me/', process.env.AI0_API_KEY!);
     const codeLoader = new CodeLoader(llmProvider);
 
     it('detects code references in a file', async () => {
@@ -70,7 +70,7 @@ describe('Code Loader and References', () => {
 });
 
 describe('Code Refactoring', () => {
-    const llmProvider = new Ai0Provider('https://ai0.uxna.me/', process.env.AI0_API_KEY!);
+    const llmProvider = new Ai0('https://ai0.uxna.me/', process.env.AI0_API_KEY!);
     const codeRefactorer = new CodeRefactorer(llmProvider);
 
     it('refactors code and saves it', async () => {
@@ -103,7 +103,7 @@ describe('Code Refactoring', () => {
 // Helper function for detectCodeReferences
 async function detectCodeReferences(filePath: string, importReferences: string) {
     const fileContent = await TextFileTool.load(filePath);
-    const codeLoader = new CodeLoader(new Ai0Provider('https://ai0.uxna.me/', process.env.AI0_API_KEY!));
+    const codeLoader = new CodeLoader(new Ai0('https://ai0.uxna.me/', process.env.AI0_API_KEY!));
     return await codeLoader.execute({ code: fileContent, filePath, importReferences });
 }
 

@@ -1,6 +1,6 @@
 import {AiFunction} from "./ai-function.ts";
 import {z} from "zod";
-import type {LlmProviderBase} from "../llm-provider/llm-provider-base.ts";
+import {AiExecutionEngineBase} from "../ai-execution-engine/ai-execution-engine-base.ts";
 
 const schema = z.object({
     refactoredCode: z.array(z.object({
@@ -14,7 +14,7 @@ export type CodeRefactorerResponse = typeof schema;
 
 export class CodeRefactorer extends AiFunction<CodeRefactorerResponse> {
     constructor(
-        llmProvider?: LlmProviderBase
+        aiExecutionEngine?: AiExecutionEngineBase
     ) {
         super({
             name: 'Рефакторщик кода',
@@ -22,7 +22,7 @@ export class CodeRefactorer extends AiFunction<CodeRefactorerResponse> {
             template: `Проанализируй этот код, затем отрефактори его так, чтобы он стал
             чище, проще и безопаснее:\n{code}`,
             responseSchema: schema,
-            aiExecutionEngine: llmProvider
+            aiExecutionEngine
         });
     }
 }

@@ -1,6 +1,6 @@
-import { AiFunction } from "./ai-function.ts";
-import { z } from "zod";
-import type { LlmProviderBase } from "../llm-provider/llm-provider-base.ts";
+import {AiFunction} from "./ai-function.ts";
+import {z} from "zod";
+import {AiExecutionEngineBase} from "../ai-execution-engine/ai-execution-engine-base.ts";
 
 const weatherResponseSchema = z.object({
     result: z.string().nullable().describe('Человекочитаемое описание погоды'),
@@ -11,13 +11,14 @@ const weatherResponseSchema = z.object({
 export type WeatherResponse = typeof weatherResponseSchema;
 
 export class Weather extends AiFunction<WeatherResponse> {
-    constructor(llmProvider?: LlmProviderBase) {
+    constructor(aiExecutionEngine?: AiExecutionEngineBase) {
         super({
             name: 'Погода',
             description: 'Возвращает обычную погоду по заданному городу и дате',
             template: 'Определи какая погода обычно в городе {city} на дату {date}',
             responseSchema: weatherResponseSchema,
-            aiExecutionEngine: llmProvider
+            aiExecutionEngine
+
         });
     }
 }
