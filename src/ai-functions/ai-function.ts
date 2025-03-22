@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import {AiExecutionEngineBase} from "../ai-execution-engine/ai-execution-engine-base.ts";
+import {Prompt} from "../prompt/prompt.ts";
 
 export type TemplateVars = { [key: string]: string };
 export type MicroAgentResponse<T> = T & { _raw?: unknown };
@@ -8,7 +9,7 @@ export type MicroAgentResponse<T> = T & { _raw?: unknown };
 interface ConstructorParams<TSchema extends z.ZodType<any, any, any> = z.ZodType<any, any, any>> {
     description: string;
     name: string;
-    template: string;
+    prompt: Prompt;
     responseSchema: TSchema;
     aiExecutionEngine?: AiExecutionEngineBase;
 }
@@ -16,53 +17,44 @@ interface ConstructorParams<TSchema extends z.ZodType<any, any, any> = z.ZodType
 export abstract class AiFunction<TSchema extends z.ZodType<any, any, any> = z.ZodType<any, any, any>> {
     public readonly name: string;
     public readonly description: string;
-    public readonly template: string;
+    public readonly prompt: Prompt;
     public readonly responseSchema: TSchema;
     protected readonly aiExecutionEngine: AiExecutionEngineBase | undefined;
-    protected readonly varsSchema: z.ZodType<TemplateVars>;
 
     protected constructor(data: ConstructorParams<TSchema>) {
         this.name = data.name;
         this.description = data.description;
-        this.template = data.template;
+        this.prompt = data.prompt;
         this.responseSchema = data.responseSchema;
         this.aiExecutionEngine = data.aiExecutionEngine;
-
-        // Создаём схему для валидации переменных шаблона,
-        // извлекая имена переменных из шаблона
-        const requiredKeys = this.extractVariableNames(this.template);
-        this.varsSchema = z.object(
-            requiredKeys.reduce((acc, key) => {
-                acc[key] = z.string().min(1, `Variable '${key}' cannot be empty`);
-                return acc;
-            }, {} as Record<string, z.ZodString>)
-        );
     }
 
-    toPrompt(vars: TemplateVars = {}): string {
+    render(vars: TemplateVars = {}): string {
         const responseSchema = JSON.stringify(zodToJsonSchema(this.responseSchema));
 
-        const promptTemplate = `${this.template}
-Answer format json should according to the following JSON schema: {schema}
-Do not send any other data. Do not send markdown.`;
+        const prompt = new Prompt(`{prompt}
+Answer format json should according to the following JSON schema:
+{schema}
+Do not send any other data. Do not send markdown.`)
 
-        return this.addVariablesToTemplate(promptTemplate, {
+        return prompt.render({
             ...vars,
+            prompt: this.prompt,
             schema: responseSchema
         });
     }
 
-    toInfo(): { name: string; description: string; template: string; responseSchema: any } {
+    toJson(): { name: string; description: string; prompt: string; responseSchema: any } {
         return {
             name: this.name,
             description: this.description,
-            template: this.template,
+            prompt: this.prompt.getTemplate(),
             responseSchema: zodToJsonSchema(this.responseSchema)
         };
     }
 
     toString(): string {
-        return JSON.stringify(this.toInfo());
+        return JSON.stringify(this.toJson());
     }
 
     parseResponse(response: unknown): MicroAgentResponse<z.infer<TSchema>> {
@@ -80,7 +72,6 @@ Do not send any other data. Do not send markdown.`;
         vars: TemplateVars,
         aiExecutionEngine?: AiExecutionEngineBase
     ): Promise<MicroAgentResponse<z.infer<TSchema>>> {
-        // Валидируем входные переменные
         try {
             this.validateVars(vars);
         } catch (error) {
@@ -94,7 +85,7 @@ Do not send any other data. Do not send markdown.`;
             throw new Error("No LLM provider found");
         }
         const response = await engine.execute({
-            prompt: this.toPrompt(vars),
+            prompt: this.render(vars),
         });
 
         console.log(`Execute [${this.name}]: ${JSON.stringify(response)}\n`);
@@ -113,7 +104,12 @@ Do not send any other data. Do not send markdown.`;
     }
 
     protected validateVars(vars: TemplateVars): void {
-        this.varsSchema.parse(vars);
+        const renderedPrompt = this.render(vars);
+        const isFullyRendered = this.prompt.isFullyRendered(renderedPrompt);
+        if (!isFullyRendered) {
+            const missingVariables = this.extractVariableNames(renderedPrompt);
+            throw new Error(`Missing variables: ${missingVariables.join(", ")}`);
+        }
     }
 
     private extractVariableNames(template: string): string[] {

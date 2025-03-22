@@ -1,6 +1,7 @@
 import { AiFunction } from "./ai-function.ts";
 import { z } from "zod";
 import {AiExecutionEngineBase} from "../ai-execution-engine/ai-execution-engine-base.ts";
+import {Prompt} from "../prompt/prompt.ts";
 
 const schema = z.object({
     value: z.number().nullable().describe('Результат выражения'),
@@ -14,7 +15,7 @@ export class Calculator extends AiFunction<CalculatorResponse> {
         super({
             name: 'Калькулятор',
             description: 'Вычисляет математические выражения',
-            template: 'Ты точный калькулятор, посчитай и выдай результат следующего выражения: {evaluation}',
+            prompt: new Prompt('Ты точный калькулятор, посчитай и выдай результат следующего выражения: {evaluation}'),
             responseSchema: schema,
             aiExecutionEngine
         });

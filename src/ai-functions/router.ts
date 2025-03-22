@@ -20,7 +20,7 @@ export class AgentRouter extends AiFunction<AgentRouterResponse> {
         super({
             name: 'Агент-роутер',
             description: 'Определяет лучший агент для выполнения задачи',
-            template: 'Твоя задача выбрать наиболее подходящего агента для выполнения задачи. Вот задача: {task}, вот список доступных агентов: {agents}',
+            prompt: 'Твоя задача выбрать наиболее подходящего агента для выполнения задачи. Вот задача: {task}, вот список доступных агентов: {agents}',
             responseSchema: agentRouterResponseSchema,
             aiExecutionEngine
         });
@@ -29,7 +29,7 @@ export class AgentRouter extends AiFunction<AgentRouterResponse> {
     async route(task: string, availableAgents: AiFunction[]) {
         return this.execute({
             task,
-            agents: JSON.stringify(availableAgents.map(agent => agent.toInfo()))
+            agents: JSON.stringify(availableAgents.map(agent => agent.toJson()))
         });
     }
 }

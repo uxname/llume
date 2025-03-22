@@ -19,7 +19,7 @@ export class CodeRefactorer extends AiFunction<CodeRefactorerResponse> {
         super({
             name: 'Рефакторщик кода',
             description: 'Рефакторит код, чтобы он стал чище, проще и безопаснее',
-            template: `Проанализируй этот код, затем отрефактори его так, чтобы он стал
+            prompt: `Проанализируй этот код, затем отрефактори его так, чтобы он стал
             чище, проще и безопаснее:\n{code}`,
             responseSchema: schema,
             aiExecutionEngine

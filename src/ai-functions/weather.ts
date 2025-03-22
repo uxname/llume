@@ -15,7 +15,7 @@ export class Weather extends AiFunction<WeatherResponse> {
         super({
             name: 'Погода',
             description: 'Возвращает обычную погоду по заданному городу и дате',
-            template: 'Определи какая погода обычно в городе {city} на дату {date}',
+            prompt: 'Определи какая погода обычно в городе {city} на дату {date}',
             responseSchema: weatherResponseSchema,
             aiExecutionEngine
 
