@@ -7,23 +7,36 @@ export class Prompt {
 
     render(params: Record<string, any>): string {
         return this.template.replace(/\{([^{}]+)}/g, (match, keyPath) => {
-            const value = this.getValueFromPath(params, keyPath.trim());
+            const trimmedPath = keyPath.trim();
+            const value = this.getValueFromPath(params, trimmedPath);
             if (value instanceof Prompt) {
                 return value.render(params);
             }
-            return value !== undefined ? String(value) : match;
+            return value !== undefined && value !== null ? String(value) : match;
         });
     }
 
     isFullyRendered(rendered: string): boolean {
-        // Проверяем только плейсхолдеры с содержимым: {key}, но не {}
-        return !/\{[^{}]+}/.test(rendered);
+        // Извлекаем все плейсхолдеры из исходного шаблона
+        const placeholders = new Set<string>();
+        this.template.replace(/\{([^{}]+)}/g, (match) => {
+            placeholders.add(match);
+            return match;
+        });
+
+        // Проверяем, остались ли эти плейсхолдеры в отрендеренной строке
+        return ![...placeholders].some((ph) => rendered.includes(ph));
     }
 
     private getValueFromPath(obj: any, path: string): any {
-        return path.split('.').reduce((acc, key) => {
-            return acc != null ? acc[key] : undefined;
-        }, obj);
+        try {
+            return path.split('.').reduce((acc, key) => {
+                if (acc == null) return undefined;
+                return acc[key];
+            }, obj);
+        } catch {
+            return undefined;
+        }
     }
 
     getTemplate(): string {

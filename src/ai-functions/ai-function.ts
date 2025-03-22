@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { zodToJsonSchema } from "zod-to-json-schema";
+import {z} from "zod";
+import {zodToJsonSchema} from "zod-to-json-schema";
 import {AiExecutionEngineBase} from "../ai-execution-engine/ai-execution-engine-base.ts";
 import {Prompt} from "../prompt/prompt.ts";
 
@@ -60,7 +60,7 @@ Do not send any other data. Do not send markdown.`)
     parseResponse(response: unknown): MicroAgentResponse<z.infer<TSchema>> {
         try {
             const parsed = this.responseSchema.parse(response);
-            return { ...parsed, _raw: response };
+            return {...parsed, _raw: response};
         } catch (error) {
             throw new Error(
                 `Invalid response format: ${error instanceof Error ? error.message : String(error)}`
@@ -72,13 +72,7 @@ Do not send any other data. Do not send markdown.`)
         vars: TemplateVars,
         aiExecutionEngine?: AiExecutionEngineBase
     ): Promise<MicroAgentResponse<z.infer<TSchema>>> {
-        try {
-            this.validateVars(vars);
-        } catch (error) {
-            throw new Error(
-                `Variable validation failed: ${error instanceof Error ? error.message : String(error)}`
-            );
-        }
+        this.validateVars(vars);
 
         const engine = aiExecutionEngine || this.aiExecutionEngine;
         if (!engine) {
