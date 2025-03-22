@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { BaseLLMProvider } from "../llm-provider/base-llm-provider.ts";
 import { zodToJsonSchema } from "zod-to-json-schema";
+import {AiExecutionEngineBase} from "../ai-execution-engine/ai-execution-engine-base.ts";
 
 export type TemplateVars = { [key: string]: string };
 export type MicroAgentResponse<T> = T & { _raw?: unknown };
@@ -10,7 +10,7 @@ interface ConstructorParams<TSchema extends z.ZodType<any, any, any> = z.ZodType
     name: string;
     template: string;
     responseSchema: TSchema;
-    llmProvider?: BaseLLMProvider;
+    aiExecutionEngine?: AiExecutionEngineBase;
 }
 
 export abstract class AiFunction<TSchema extends z.ZodType<any, any, any> = z.ZodType<any, any, any>> {
@@ -18,7 +18,7 @@ export abstract class AiFunction<TSchema extends z.ZodType<any, any, any> = z.Zo
     public readonly description: string;
     public readonly template: string;
     public readonly responseSchema: TSchema;
-    protected readonly llmProvider: BaseLLMProvider | undefined;
+    protected readonly aiExecutionEngine: AiExecutionEngineBase | undefined;
     protected readonly varsSchema: z.ZodType<TemplateVars>;
 
     protected constructor(data: ConstructorParams<TSchema>) {
@@ -26,7 +26,7 @@ export abstract class AiFunction<TSchema extends z.ZodType<any, any, any> = z.Zo
         this.description = data.description;
         this.template = data.template;
         this.responseSchema = data.responseSchema;
-        this.llmProvider = data.llmProvider;
+        this.aiExecutionEngine = data.aiExecutionEngine;
 
         // Создаём схему для валидации переменных шаблона,
         // извлекая имена переменных из шаблона
@@ -78,7 +78,7 @@ Do not send any other data. Do not send markdown.`;
 
     async execute(
         vars: TemplateVars,
-        llmProvider?: BaseLLMProvider
+        aiExecutionEngine?: AiExecutionEngineBase
     ): Promise<MicroAgentResponse<z.infer<TSchema>>> {
         // Валидируем входные переменные
         try {
@@ -89,11 +89,11 @@ Do not send any other data. Do not send markdown.`;
             );
         }
 
-        const provider = llmProvider || this.llmProvider;
-        if (!provider) {
+        const engine = aiExecutionEngine || this.aiExecutionEngine;
+        if (!engine) {
             throw new Error("No LLM provider found");
         }
-        const response = await provider.query({
+        const response = await engine.execute({
             prompt: this.toPrompt(vars),
         });
 

@@ -1,6 +1,6 @@
 import {AiFunction} from "./ai-function.ts";
 import {z} from "zod";
-import type {BaseLLMProvider} from "../llm-provider/base-llm-provider.ts";
+import type {LlmProviderBase} from "../llm-provider/llm-provider-base.ts";
 
 const schema = z.object({
     importReferences: z.array(z.string().describe('Полный путь к импортируемому файлу (включая текущую папку)')),
@@ -11,7 +11,7 @@ export type CodeLoaderResponse = typeof schema;
 
 export class CodeLoader extends AiFunction<CodeLoaderResponse> {
     constructor(
-        llmProvider?: BaseLLMProvider
+        llmProvider?: LlmProviderBase
     ) {
         super({
             name: 'Загрузчик кода',
@@ -23,7 +23,7 @@ export class CodeLoader extends AiFunction<CodeLoaderResponse> {
             Также игнорируй файлы из библиотек.
             Не возвращай те файл которые уже были найдены: {importReferences}`,
             responseSchema: schema,
-            llmProvider
+            aiExecutionEngine: llmProvider
         });
     }
 }

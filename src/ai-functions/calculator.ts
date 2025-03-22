@@ -1,6 +1,6 @@
 import { AiFunction } from "./ai-function.ts";
 import { z } from "zod";
-import type { BaseLLMProvider } from "../llm-provider/base-llm-provider.ts";
+import type { LlmProviderBase } from "../llm-provider/llm-provider-base.ts";
 
 const schema = z.object({
     value: z.number().nullable().describe('Результат выражения'),
@@ -10,13 +10,13 @@ const schema = z.object({
 export type CalculatorResponse = typeof schema;
 
 export class Calculator extends AiFunction<CalculatorResponse> {
-    constructor(llmProvider?: BaseLLMProvider) {
+    constructor(llmProvider?: LlmProviderBase) {
         super({
             name: 'Калькулятор',
             description: 'Вычисляет математические выражения',
             template: 'Ты точный калькулятор, посчитай и выдай результат следующего выражения: {evaluation}',
             responseSchema: schema,
-            llmProvider
+            aiExecutionEngine: llmProvider
         });
     }
 }

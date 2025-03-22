@@ -1,6 +1,6 @@
 import { AiFunction } from "./ai-function.ts";
 import { z } from "zod";
-import type { BaseLLMProvider } from "../llm-provider/base-llm-provider.ts";
+import type { LlmProviderBase } from "../llm-provider/llm-provider-base.ts";
 
 const agentRouterResponseSchema = z.union([
     z.object({
@@ -16,13 +16,13 @@ const agentRouterResponseSchema = z.union([
 export type AgentRouterResponse = typeof agentRouterResponseSchema;
 
 export class AgentRouter extends AiFunction<AgentRouterResponse> {
-    constructor(llmProvider?: BaseLLMProvider) {
+    constructor(llmProvider?: LlmProviderBase) {
         super({
             name: 'Агент-роутер',
             description: 'Определяет лучший агент для выполнения задачи',
             template: 'Твоя задача выбрать наиболее подходящего агента для выполнения задачи. Вот задача: {task}, вот список доступных агентов: {agents}',
             responseSchema: agentRouterResponseSchema,
-            llmProvider
+            aiExecutionEngine: llmProvider
         });
     }
 
