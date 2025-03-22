@@ -1,44 +1,39 @@
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { AiExecutionEngineBase } from "../ai-execution-engine/ai-execution-engine-base.ts";
 import { Prompt } from "../prompt/prompt.ts";
+import type { Container } from "../container.ts";
 
 export type TemplateVars = { [key: string]: string };
-export type MicroAgentResponse<T> = T & { _raw?: unknown };
 
-interface ConstructorParams<
-  TSchema extends z.ZodType<unknown, unknown, unknown> = z.ZodType<
-    unknown,
-    unknown,
-    unknown
-  >,
-> {
+const AiErrorSchema = z.object({
+  error: z
+    .object({
+      message: z.string().describe("Error message"),
+    })
+    .optional(),
+});
+
+export type MicroAgentResponse<T = unknown> = T & { _raw?: unknown };
+
+interface ConstructorParams<TSchema extends z.ZodType = z.ZodType> {
   description: string;
   name: string;
   prompt: Prompt;
   responseSchema: TSchema;
-  aiExecutionEngine?: AiExecutionEngineBase;
 }
 
-export abstract class AiFunction<
-  TSchema extends z.ZodType<unknown, unknown, unknown> = z.ZodType<
-    unknown,
-    unknown,
-    unknown
-  >,
-> {
+export abstract class AiFunction<TSchema extends z.ZodType = z.ZodType> {
   public readonly name: string;
   public readonly description: string;
   public readonly prompt: Prompt;
   public readonly responseSchema: TSchema;
-  protected readonly aiExecutionEngine: AiExecutionEngineBase | undefined;
+  public container: Container;
 
   protected constructor(data: ConstructorParams<TSchema>) {
     this.name = data.name;
     this.description = data.description;
     this.prompt = data.prompt;
-    this.responseSchema = data.responseSchema;
-    this.aiExecutionEngine = data.aiExecutionEngine;
+    this.responseSchema = data.responseSchema.and(AiErrorSchema);
   }
 
   render(vars: TemplateVars = {}): string {
@@ -47,6 +42,7 @@ export abstract class AiFunction<
     const prompt = new Prompt(`{prompt}
 Answer format json should according to the following JSON schema:
 {schema}
+Fill the field "error" only if you can't answer the question.
 Do not send unknown other data. Do not send markdown.`);
 
     return prompt.render({
@@ -85,36 +81,16 @@ Do not send unknown other data. Do not send markdown.`);
     }
   }
 
-  async execute(
+  public async execute(
     vars: TemplateVars,
-    aiExecutionEngine?: AiExecutionEngineBase,
   ): Promise<MicroAgentResponse<z.infer<TSchema>>> {
-    this.validateVars(vars);
-
-    const engine = aiExecutionEngine || this.aiExecutionEngine;
-    if (!engine) {
-      throw new Error("No LLM provider found");
+    if (!this.container) {
+      throw new Error("AiFunction is not attached to a container");
     }
-    const response = await engine.execute({
-      prompt: this.render(vars),
-    });
-
-    console.log(`Execute [${this.name}]: ${JSON.stringify(response)}\n`);
-
-    return this.parseResponse(response);
+    return this.container.executeAiFunction(this.name, vars);
   }
 
-  protected addVariablesToTemplate(prompt: string, vars: TemplateVars): string {
-    return prompt.replace(/\{(\w+)}/g, (match, key) => {
-      if (key in vars) {
-        return vars[key];
-      }
-      console.warn(`Key "${key}" not found in vars.`);
-      return match;
-    });
-  }
-
-  protected validateVars(vars: TemplateVars): void {
+  public validateVars(vars: TemplateVars): void {
     const renderedPrompt = this.render(vars);
     const isFullyRendered = this.prompt.isFullyRendered(renderedPrompt);
     if (!isFullyRendered) {

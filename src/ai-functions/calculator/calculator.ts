@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { AiExecutionEngineBase } from "../../ai-execution-engine/ai-execution-engine-base.ts";
 import { Prompt } from "../../prompt/prompt.ts";
 import { AiFunction } from "../../ai-function-base/ai-function.ts";
 
@@ -10,7 +9,7 @@ const schema = z.object({
 export type CalculatorResponse = typeof schema;
 
 export class Calculator extends AiFunction<CalculatorResponse> {
-  constructor(aiExecutionEngine?: AiExecutionEngineBase) {
+  constructor() {
     super({
       name: "Calculator",
       description: "Calculates mathematical expressions",
@@ -18,7 +17,6 @@ export class Calculator extends AiFunction<CalculatorResponse> {
         "You are a true calculator, calculate and return the result of the following expression: {evaluation}",
       ),
       responseSchema: schema,
-      aiExecutionEngine,
     });
   }
 }
