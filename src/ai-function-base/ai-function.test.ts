@@ -39,7 +39,7 @@ describe("AiFunction", () => {
     expect(renderedPrompt)
       .toEqual(`You are a true calculator, calculate and return the result of the following expression: 2 + 2
 Answer format json should according to the following JSON schema:
-{"allOf":[{"type":"object","properties":{"value":{"type":["number","null"],"description":"Expression result"},"errors":{"anyOf":[{"type":"array","items":{"type":"string"}},{"type":"null"}],"description":"List of errors if any"}},"required":["value","errors"]},{"type":"object","properties":{"error":{"type":"object","properties":{"message":{"type":"string","description":"Error message"}},"required":["message"],"additionalProperties":false}}}],"$schema":"http://json-schema.org/draft-07/schema#"}
+{"allOf":[{"type":"object","properties":{"value":{"type":["number","null"],"description":"Expression result"},"errors":{"anyOf":[{"type":"array","items":{"type":"string"}},{"type":"null"}],"description":"List of errors if any"}},"required":["value","errors"]},{"type":"object","properties":{"_error":{"type":"object","properties":{"message":{"type":"string","description":"Error message"}},"required":["message"],"additionalProperties":false}}}],"$schema":"http://json-schema.org/draft-07/schema#"}
 Fill the field "error" only if you can't answer the question.
 Do not send unknown other data. Do not send markdown.`);
 

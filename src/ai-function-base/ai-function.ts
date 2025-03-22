@@ -6,14 +6,19 @@ import type { Container } from "../container.ts";
 export type TemplateVars = { [key: string]: string };
 
 const AiErrorSchema = z.object({
-  error: z
+  _error: z
     .object({
       message: z.string().describe("Error message"),
     })
     .optional(),
 });
 
-export type MicroAgentResponse<T = unknown> = T & { _raw?: unknown };
+type AiError = z.infer<typeof AiErrorSchema>;
+
+export type MicroAgentResponse<T = unknown> = T &
+  AiError & {
+    _raw?: unknown;
+  };
 
 interface ConstructorParams<TSchema extends z.ZodType = z.ZodType> {
   description: string;

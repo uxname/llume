@@ -29,6 +29,12 @@ export class Container {
 
     const response = await this.executionEngine.execute({ prompt });
 
-    return aiFunction.parseResponse(response);
+    const parsedResponse = aiFunction.parseResponse(response);
+
+    if (parsedResponse.error) {
+      throw new Error(parsedResponse._error?.message);
+    }
+
+    return parsedResponse;
   }
 }
