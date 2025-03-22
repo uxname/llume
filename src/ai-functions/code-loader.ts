@@ -2,10 +2,12 @@ import {AiFunction} from "./ai-function.ts";
 import {z} from "zod";
 import type {BaseLLMProvider} from "../llm-provider/base-llm-provider.ts";
 
-export interface CodeLoaderResponse {
-    importReferences: string[];
-    currentDir: string;
-}
+const schema = z.object({
+    importReferences: z.array(z.string().describe('Полный путь к импортируемому файлу (включая текущую папку)')),
+    currentDir: z.string().describe('Путь к папке с файлом'),
+})
+
+export type CodeLoaderResponse = typeof schema;
 
 export class CodeLoader extends AiFunction<CodeLoaderResponse> {
     constructor(
@@ -20,10 +22,7 @@ export class CodeLoader extends AiFunction<CodeLoaderResponse> {
             Игнорируй файлы, которые не нужно импортировать, например из node_modules или системные импорты типа "node:*
             Также игнорируй файлы из библиотек.
             Не возвращай те файл которые уже были найдены: {importReferences}`,
-            responseSchema: z.object({
-                importReferences: z.array(z.string().describe('Полный путь к импортируемому файлу (включая текущую папку)')),
-                currentDir: z.string().describe('Путь к папке с файлом'),
-            }),
+            responseSchema: schema,
             llmProvider
         });
     }

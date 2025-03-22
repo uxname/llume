@@ -1,24 +1,21 @@
-import {AiFunction} from "./ai-function.ts";
-import {z} from "zod";
-import type {BaseLLMProvider} from "../llm-provider/base-llm-provider.ts";
+import { AiFunction } from "./ai-function.ts";
+import { z } from "zod";
+import type { BaseLLMProvider } from "../llm-provider/base-llm-provider.ts";
 
-interface CalculatorResponse {
-    value: number;
-    errors: string[];
-}
+const schema = z.object({
+    value: z.number().nullable().describe('Результат выражения'),
+    errors: z.array(z.string()).nullable().describe('Список ошибок, если есть'),
+});
+
+export type CalculatorResponse = typeof schema;
 
 export class Calculator extends AiFunction<CalculatorResponse> {
-    constructor(
-        llmProvider?: BaseLLMProvider
-    ) {
+    constructor(llmProvider?: BaseLLMProvider) {
         super({
             name: 'Калькулятор',
             description: 'Вычисляет математические выражения',
             template: 'Ты точный калькулятор, посчитай и выдай результат следующего выражения: {evaluation}',
-            responseSchema: z.object({
-                value: z.number().nullable().describe('Результат выражения'),
-                errors: z.array(z.string()).nullable().describe('Список ошибок, если есть'),
-            }),
+            responseSchema: schema,
             llmProvider
         });
     }

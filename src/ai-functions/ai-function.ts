@@ -1,34 +1,35 @@
-import {z} from "zod";
-import type {BaseLLMProvider} from "../llm-provider/base-llm-provider.ts";
-import {zodToJsonSchema} from "zod-to-json-schema";
+import { z } from "zod";
+import type { BaseLLMProvider } from "../llm-provider/base-llm-provider.ts";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
 export type TemplateVars = { [key: string]: string };
 export type MicroAgentResponse<T> = T & { _raw?: unknown };
 
-interface ConstructorParams<T = any> {
+interface ConstructorParams<TSchema extends z.ZodType<any, any, any> = z.ZodType<any, any, any>> {
     description: string;
     name: string;
-    template: string
-    responseSchema: z.ZodType<T>;
+    template: string;
+    responseSchema: TSchema;
     llmProvider?: BaseLLMProvider;
 }
 
-export abstract class AiFunction<T = any> {
+export abstract class AiFunction<TSchema extends z.ZodType<any, any, any> = z.ZodType<any, any, any>> {
     public readonly name: string;
     public readonly description: string;
     public readonly template: string;
-    public readonly responseSchema: z.ZodType<T>;
+    public readonly responseSchema: TSchema;
     protected readonly llmProvider: BaseLLMProvider | undefined;
     protected readonly varsSchema: z.ZodType<TemplateVars>;
 
-    protected constructor(data: ConstructorParams) {
+    protected constructor(data: ConstructorParams<TSchema>) {
         this.name = data.name;
         this.description = data.description;
         this.template = data.template;
         this.responseSchema = data.responseSchema;
         this.llmProvider = data.llmProvider;
 
-        // Create a schema to validate template variables by extracting variable names from the template
+        // Создаём схему для валидации переменных шаблона,
+        // извлекая имена переменных из шаблона
         const requiredKeys = this.extractVariableNames(this.template);
         this.varsSchema = z.object(
             requiredKeys.reduce((acc, key) => {
@@ -64,33 +65,38 @@ Do not send any other data. Do not send markdown.`;
         return JSON.stringify(this.toInfo());
     }
 
-    parseResponse(response: unknown): MicroAgentResponse<T> {
+    parseResponse(response: unknown): MicroAgentResponse<z.infer<TSchema>> {
         try {
             const parsed = this.responseSchema.parse(response);
-            return {...parsed, _raw: response};
+            return { ...parsed, _raw: response };
         } catch (error) {
-            throw new Error(`Invalid response format: ${error instanceof Error ? error.message : String(error)}`);
+            throw new Error(
+                `Invalid response format: ${error instanceof Error ? error.message : String(error)}`
+            );
         }
     }
 
-    async execute(vars: TemplateVars, llmProvider?: BaseLLMProvider): Promise<MicroAgentResponse<T>> {
-        // Validate input variables against the schema
+    async execute(
+        vars: TemplateVars,
+        llmProvider?: BaseLLMProvider
+    ): Promise<MicroAgentResponse<z.infer<TSchema>>> {
+        // Валидируем входные переменные
         try {
             this.validateVars(vars);
         } catch (error) {
-            throw new Error(`Variable validation failed: ${error instanceof Error ? error.message : String(error)}`);
+            throw new Error(
+                `Variable validation failed: ${error instanceof Error ? error.message : String(error)}`
+            );
         }
 
         const provider = llmProvider || this.llmProvider;
         if (!provider) {
-            throw new Error('No LLM provider found');
+            throw new Error("No LLM provider found");
         }
         const response = await provider.query({
             prompt: this.toPrompt(vars),
         });
 
-        // log request and response
-        // console.log(`Execute [${this.name}]:\n${JSON.stringify(vars,null,2)}\nResponse: ${JSON.stringify(response)}\n`);
         console.log(`Execute [${this.name}]: ${JSON.stringify(response)}\n`);
 
         return this.parseResponse(response);
@@ -114,6 +120,6 @@ Do not send any other data. Do not send markdown.`;
         const matches = template.match(/\{(\w+)}/g) || [];
         return matches
             .map(match => match.substring(1, match.length - 1))
-            .filter(key => key !== 'schema'); // Exclude the 'schema' variable which is added internally
+            .filter(key => key !== "schema"); // Исключаем переменную "schema", которая добавляется автоматически
     }
 }
