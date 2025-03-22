@@ -28,7 +28,8 @@ export class Container {
     console.log(prompt);
 
     let lastError: Error | null = null;
-    for (let attempt = 1; attempt <= 5; attempt++) {
+    const MAX_ATTEMPTS = 3;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
         const response = await this.executionEngine.execute({ prompt });
         const parsedResponse = aiFunction.parseResponse(response);
