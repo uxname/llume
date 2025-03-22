@@ -44,13 +44,8 @@ Fill the field "error" only if you can't answer the question.
 Do not send unknown other data. Do not send markdown.`);
 
     const result = await aiFunction.execute({ evaluation });
-    expect(result).toEqual({
-      value: 4,
-      errors: null,
-      _raw: {
-        value: 4,
-        errors: null,
-      },
-    });
+    expect(result.value).toBe(4);
+    expect(result._error).toBeUndefined();
+    expect(result._raw).toBeDefined();
   });
 });

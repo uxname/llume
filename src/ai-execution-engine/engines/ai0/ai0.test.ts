@@ -8,5 +8,5 @@ test("should work", async () => {
   const prompt =
     'What is 2 + 2? Answer format should be the JSON {"result": 4}';
   const response = await ai0Provider.execute({ prompt });
-  expect(response.result).toBe(4);
+  expect(response).toBe('{"result": 4}');
 });

@@ -17,7 +17,7 @@ type AiError = z.infer<typeof AiErrorSchema>;
 
 export type MicroAgentResponse<T = unknown> = T &
   AiError & {
-    _raw?: unknown;
+    _raw: string;
   };
 
 interface ConstructorParams<TSchema extends z.ZodType = z.ZodType> {
@@ -75,9 +75,10 @@ Do not send unknown other data. Do not send markdown.`);
     return JSON.stringify(this.toJson());
   }
 
-  parseResponse(response: unknown): MicroAgentResponse<z.infer<TSchema>> {
+  parseResponse(response: string): MicroAgentResponse<z.infer<TSchema>> {
     try {
-      const parsed = this.responseSchema.parse(response);
+      const parsedResponse = JSON.parse(response);
+      const parsed = this.responseSchema.parse(parsedResponse);
       return { ...parsed, _raw: response };
     } catch (error) {
       throw new Error(

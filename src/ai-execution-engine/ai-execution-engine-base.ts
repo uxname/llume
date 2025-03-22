@@ -1,14 +1,10 @@
 import { LlmProviderBase, type LLMRequestParams } from "./llm-provider-base.ts";
 
-export type Json = Record<string, unknown>;
-
 export abstract class AiExecutionEngineBase extends LlmProviderBase {
-  public async execute(params: LLMRequestParams): Promise<Json> {
+  public async execute(params: LLMRequestParams): Promise<string> {
     const response = await super.query(params);
 
-    const normalizedResponse = this.normalizeResponse(response);
-
-    return JSON.parse(normalizedResponse);
+    return this.normalizeResponse(response);
   }
 
   private normalizeResponse(response: string): string {

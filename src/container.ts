@@ -26,6 +26,7 @@ export class Container {
     aiFunction.validateVars(vars);
 
     const prompt = aiFunction.render(vars);
+    console.log(prompt);
 
     const response = await this.executionEngine.execute({ prompt });
 
