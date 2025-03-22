@@ -19,10 +19,10 @@ describe("Calculator", () => {
   });
 
   test("should not calculate", async () => {
-    const result = await calculator.execute({
+    const promise = calculator.execute({
       evaluation: "1/0",
     });
 
-    console.log("!!!!!!!", result);
+    await expect(promise).rejects.toThrow();
   });
 });

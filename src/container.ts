@@ -32,7 +32,7 @@ export class Container {
 
     const parsedResponse = aiFunction.parseResponse(response);
 
-    if (parsedResponse.error) {
+    if (parsedResponse._error) {
       throw new Error(parsedResponse._error?.message);
     }
 
