@@ -7,9 +7,10 @@ describe("Calculator", () => {
     const engine = new Ai0(process.env.AI0_URL!, process.env.AI0_API_KEY!);
 
     const aiFunction = new Calculator(engine);
-    const evaluation = "(two plus two) + 10 - (5 * 2)";
 
-    const result = await aiFunction.execute({ evaluation });
+    const result = await aiFunction.execute({
+      evaluation: "(two plus two) + 10 - (5 * 2)",
+    });
 
     expect(result.value).toBe(4);
   });
