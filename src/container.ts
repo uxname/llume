@@ -24,18 +24,32 @@ export class Container {
     }
 
     aiFunction.validateVars(vars);
-
     const prompt = aiFunction.render(vars);
     console.log(prompt);
 
-    const response = await this.executionEngine.execute({ prompt });
+    let lastError: Error | null = null;
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      try {
+        const response = await this.executionEngine.execute({ prompt });
+        const parsedResponse = aiFunction.parseResponse(response);
 
-    const parsedResponse = aiFunction.parseResponse(response);
+        if (parsedResponse._error) {
+          throw new Error(parsedResponse._error?.message);
+        }
 
-    if (parsedResponse._error) {
-      throw new Error(parsedResponse._error?.message);
+        return parsedResponse;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        console.error(
+          `Attempt ${attempt} failed for "${aiFunctionName}": ${lastError.message}`,
+        );
+        if (attempt === 5) {
+          throw lastError;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+      }
     }
 
-    return parsedResponse;
+    throw lastError || new Error("Unknown error after retries");
   }
 }
