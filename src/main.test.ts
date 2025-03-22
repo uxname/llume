@@ -56,8 +56,8 @@ describe("AI Functions and Routing", () => {
 });
 
 describe("Code Loader and References", () => {
-  const llmProvider = new Ai0("https://ai0.uxna.me/", process.env.AI0_API_KEY!);
-  const codeLoader = new CodeLoader(llmProvider);
+  // const llmProvider = new Ai0("https://ai0.uxna.me/", process.env.AI0_API_KEY!);
+  // const codeLoader = new CodeLoader(llmProvider);
 
   it("detects code references in a file", async () => {
     const filePath = path.join(import.meta.dirname, "..", "package.json");

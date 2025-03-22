@@ -19,7 +19,7 @@ export class Ai0 extends AiExecutionEngineBase {
     this.apiKey = apiKey;
   }
 
-  protected async generateResponse<T = any>(
+  protected async generateResponse<T = unknown>(
     params: Ai0RequestParams,
   ): Promise<T> {
     const { prompt, provider = "gemini", randomProvider = false } = params;

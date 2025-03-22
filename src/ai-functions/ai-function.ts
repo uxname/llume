@@ -7,7 +7,11 @@ export type TemplateVars = { [key: string]: string };
 export type MicroAgentResponse<T> = T & { _raw?: unknown };
 
 interface ConstructorParams<
-  TSchema extends z.ZodType<any, any, any> = z.ZodType<any, any, any>,
+  TSchema extends z.ZodType<unknown, unknown, unknown> = z.ZodType<
+    unknown,
+    unknown,
+    unknown
+  >,
 > {
   description: string;
   name: string;
@@ -17,7 +21,11 @@ interface ConstructorParams<
 }
 
 export abstract class AiFunction<
-  TSchema extends z.ZodType<any, any, any> = z.ZodType<any, any, any>,
+  TSchema extends z.ZodType<unknown, unknown, unknown> = z.ZodType<
+    unknown,
+    unknown,
+    unknown
+  >,
 > {
   public readonly name: string;
   public readonly description: string;
@@ -39,7 +47,7 @@ export abstract class AiFunction<
     const prompt = new Prompt(`{prompt}
 Answer format json should according to the following JSON schema:
 {schema}
-Do not send any other data. Do not send markdown.`);
+Do not send unknown other data. Do not send markdown.`);
 
     return prompt.render({
       ...vars,
@@ -52,7 +60,7 @@ Do not send any other data. Do not send markdown.`);
     name: string;
     description: string;
     prompt: string;
-    responseSchema: any;
+    responseSchema: unknown;
   } {
     return {
       name: this.name,
