@@ -1,7 +1,7 @@
-import { AiFunction } from "../ai-function/ai-function.ts";
 import { z } from "zod";
-import { AiExecutionEngineBase } from "../ai-execution-engine/ai-execution-engine-base.ts";
-import { Prompt } from "../prompt/prompt.ts";
+import { AiExecutionEngineBase } from "../../ai-execution-engine/ai-execution-engine-base.ts";
+import { Prompt } from "../../prompt/prompt.ts";
+import { AiFunction } from "../../ai-function-base/ai-function.ts";
 
 const schema = z.object({
   value: z.number().nullable().describe("Expression result"),

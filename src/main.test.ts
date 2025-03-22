@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Calculator } from "./ai-functions/calculator.ts";
+import { Calculator } from "./ai-functions/calculator/calculator.ts";
 import { AgentRouter } from "./ai-functions/router.ts";
 import { Weather } from "./ai-functions/weather.ts";
 import { CodeLoader } from "./ai-functions/code-loader.ts";
