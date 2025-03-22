@@ -2,7 +2,6 @@ import { beforeAll, describe, expect, test } from "vitest";
 import { Prompt } from "../prompt/prompt.ts";
 import { AiFunction } from "./ai-function.ts";
 import { z } from "zod";
-import { AiExecutionEngineBase } from "../ai-execution-engine/ai-execution-engine-base.ts";
 import { Ai0 } from "../ai-execution-engine/engines/ai0/ai0.ts";
 import { Container } from "../container.ts";
 
@@ -52,21 +51,26 @@ Do not send unknown other data. Do not send markdown.`);
   });
 
   test("should generate function info", () => {
+    const prompt = new Prompt(
+      "You are a true calculator, calculate and return the result of the following expression: {evaluation}",
+    );
+
     class TestAiFunction extends AiFunction<CalculatorResponse> {
       constructor() {
         super({
           name: "Calculator",
           description: "Calculates mathematical expressions",
-          prompt: new Prompt(
-            "You are a true calculator, calculate and return the result of the following expression: {evaluation}",
-          ),
+          prompt,
           responseSchema: schema,
         });
       }
     }
+
     const aiFunction = new TestAiFunction();
     const info = aiFunction.toJson();
     expect(info.name).toBe("Calculator");
     expect(info.description).toBe("Calculates mathematical expressions");
+    expect(info.prompt).toBe(prompt.getTemplate());
+    expect(info.responseSchema).toBeDefined();
   });
 });
