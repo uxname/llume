@@ -1,11 +1,10 @@
-import { AiFunction } from "./ai-function.ts";
+import { AiFunction } from "../ai-function/ai-function.ts";
 import { z } from "zod";
 import { AiExecutionEngineBase } from "../ai-execution-engine/ai-execution-engine-base.ts";
 import { Prompt } from "../prompt/prompt.ts";
 
 const schema = z.object({
-  value: z.number().nullable().describe("Результат выражения"),
-  errors: z.array(z.string()).nullable().describe("Список ошибок, если есть"),
+  value: z.number().nullable().describe("Expression result"),
 });
 
 export type CalculatorResponse = typeof schema;
@@ -13,10 +12,10 @@ export type CalculatorResponse = typeof schema;
 export class Calculator extends AiFunction<CalculatorResponse> {
   constructor(aiExecutionEngine?: AiExecutionEngineBase) {
     super({
-      name: "Калькулятор",
-      description: "Вычисляет математические выражения",
+      name: "Calculator",
+      description: "Calculates mathematical expressions",
       prompt: new Prompt(
-        "Ты точный калькулятор, посчитай и выдай результат следующего выражения: {evaluation}",
+        "You are a true calculator, calculate and return the result of the following expression: {evaluation}",
       ),
       responseSchema: schema,
       aiExecutionEngine,
