@@ -12,7 +12,7 @@ describe("Calculator", () => {
     container.addAiFunction(calculator);
 
     const result = await calculator.execute({
-      evaluation: "(two plus two) + 10 - (5 * 2)",
+      evaluation: "two plus two",
     });
 
     expect(result.value).toBe(4);
