@@ -8,7 +8,7 @@ describe("Calculator", () => {
   const container = new Container(engine);
 
   const calculator = new Calculator();
-  container.addAiFunction(calculator);
+  container.registerAiFunction(calculator);
 
   test("should calculate", async () => {
     const result = await calculator.execute({

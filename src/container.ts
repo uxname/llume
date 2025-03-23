@@ -20,7 +20,7 @@ export class Container {
     this.rules.push(new Prompt(rule));
   }
 
-  addAiFunction(aiFunction: AiFunction) {
+  registerAiFunction(aiFunction: AiFunction) {
     aiFunction.container = this;
     this.aiFunctions.set(aiFunction.name, aiFunction);
   }

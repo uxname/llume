@@ -10,7 +10,7 @@ describe("Container", () => {
     const container = new Container(engine);
 
     const calculator = new Calculator();
-    container.addAiFunction(calculator);
+    container.registerAiFunction(calculator);
     container.addRule("If prompt contains 'two plus two' then return 5");
 
     const result = await calculator.execute({

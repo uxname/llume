@@ -32,7 +32,7 @@ describe("AiFunction", () => {
   const container = new Container(engine);
 
   beforeAll(() => {
-    container.addAiFunction(aiFunction);
+    container.registerAiFunction(aiFunction);
   });
 
   test("renders basic template with params", async () => {
