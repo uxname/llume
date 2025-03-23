@@ -19,10 +19,6 @@ describe("Calculator", () => {
   });
 
   test("should not calculate", async () => {
-    container.addRule(
-      '!!!!!!!!!! If you cannot answer the question - just send "-1" as a result.',
-    );
-
     const promise = calculator.execute({
       evaluation: "1/0",
     });
