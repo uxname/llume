@@ -31,8 +31,8 @@ export abstract class AiFunction<TSchema extends z.ZodType = z.ZodType> {
   public readonly name: string;
   public readonly description: string;
   public readonly prompt: Prompt;
-  public readonly responseSchema: TSchema;
-  public container: Container;
+  public readonly responseSchema: z.ZodType;
+  public container: Container | undefined;
 
   protected constructor(data: ConstructorParams<TSchema>) {
     this.name = data.name;
@@ -41,20 +41,15 @@ export abstract class AiFunction<TSchema extends z.ZodType = z.ZodType> {
     this.responseSchema = data.responseSchema.and(AiErrorSchema);
   }
 
-  render(vars: TemplateVars = {}): string {
-    const responseSchema = JSON.stringify(zodToJsonSchema(this.responseSchema));
-
-    const prompt = new Prompt(`{prompt}
-Answer format json should according to the following JSON schema:
+  private getSystemPrompt(): Prompt {
+    return new Prompt(`Answer format json should according to the following JSON schema:
 {schema}
 Fill the field "error" only if you can't answer the question.
 Do not send unknown other data. Do not send markdown.`);
+  }
 
-    return prompt.render({
-      ...vars,
-      prompt: this.prompt,
-      schema: responseSchema,
-    });
+  getPrompt(): Prompt {
+    return this.prompt.merge(this.getSystemPrompt());
   }
 
   toJson(): {
@@ -97,7 +92,10 @@ Do not send unknown other data. Do not send markdown.`);
   }
 
   public validateVars(vars: TemplateVars): void {
-    const renderedPrompt = this.render(vars);
+    const renderedPrompt = this.getPrompt().render({
+      ...vars,
+      schema: JSON.stringify(zodToJsonSchema(this.responseSchema)),
+    });
     const isFullyRendered = this.prompt.isFullyRendered(renderedPrompt);
     if (!isFullyRendered) {
       const missingVariables = this.extractVariableNames(renderedPrompt);

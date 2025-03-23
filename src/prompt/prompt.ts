@@ -17,14 +17,11 @@ export class Prompt {
   }
 
   isFullyRendered(rendered: string): boolean {
-    // Извлекаем все плейсхолдеры из исходного шаблона
     const placeholders = new Set<string>();
     this.template.replace(/\{([^{}]+)}/g, (match) => {
       placeholders.add(match);
       return match;
     });
-
-    // Проверяем, остались ли эти плейсхолдеры в отрендеренной строке
     return ![...placeholders].some((ph) => rendered.includes(ph));
   }
 
@@ -41,5 +38,21 @@ export class Prompt {
 
   getTemplate(): string {
     return this.template;
+  }
+
+  merge(other: Prompt, separator?: string): Prompt;
+  merge(others: Prompt[], separator?: string): Prompt;
+  merge(otherOrOthers: Prompt | Prompt[], separator: string = "\n"): Prompt {
+    if (Array.isArray(otherOrOthers)) {
+      const combinedTemplate = [
+        this.template,
+        ...otherOrOthers.map((p) => p.template),
+      ].join(separator);
+      return new Prompt(combinedTemplate);
+    } else {
+      return new Prompt(
+        `${this.template}${separator}${otherOrOthers.template}`,
+      );
+    }
   }
 }

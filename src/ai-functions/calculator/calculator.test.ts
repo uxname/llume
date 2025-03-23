@@ -7,7 +7,7 @@ describe("Calculator", () => {
   const engine = new Ai0(process.env.AI0_URL!, process.env.AI0_API_KEY!);
   const container = new Container(engine);
 
-  const calculator = new Calculator(engine);
+  const calculator = new Calculator();
   container.addAiFunction(calculator);
 
   test("should calculate", async () => {
@@ -19,6 +19,10 @@ describe("Calculator", () => {
   });
 
   test("should not calculate", async () => {
+    container.addRule(
+      '!!!!!!!!!! If you cannot answer the question - just send "-1" as a result.',
+    );
+
     const promise = calculator.execute({
       evaluation: "1/0",
     });

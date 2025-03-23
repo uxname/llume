@@ -4,6 +4,7 @@ import { AiFunction } from "./ai-function.ts";
 import { z } from "zod";
 import { Ai0 } from "../ai-execution-engine/engines/ai0/ai0.ts";
 import { Container } from "../container.ts";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
 describe("AiFunction", () => {
   const schema = z.object({
@@ -27,7 +28,7 @@ describe("AiFunction", () => {
   }
 
   const engine = new Ai0(process.env.AI0_URL!, process.env.AI0_API_KEY!);
-  const aiFunction = new TestAiFunction(engine);
+  const aiFunction = new TestAiFunction();
   const container = new Container(engine);
 
   beforeAll(() => {
@@ -36,7 +37,10 @@ describe("AiFunction", () => {
 
   test("renders basic template with params", async () => {
     const evaluation = "2 + 2";
-    const renderedPrompt = aiFunction.render({ evaluation });
+    const renderedPrompt = aiFunction.getPrompt().render({
+      evaluation,
+      schema: JSON.stringify(zodToJsonSchema(aiFunction.responseSchema)),
+    });
     expect(renderedPrompt)
       .toEqual(`You are a true calculator, calculate and return the result of the following expression: 2 + 2
 Answer format json should according to the following JSON schema:

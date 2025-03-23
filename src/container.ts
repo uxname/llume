@@ -1,12 +1,23 @@
 import type { AiExecutionEngineBase } from "./ai-execution-engine/ai-execution-engine-base.ts";
-import type { MicroAgentResponse } from "./ai-function-base/ai-function.ts";
+import {
+  AiFunction,
+  type MicroAgentResponse,
+  type TemplateVars,
+} from "./ai-function-base/ai-function.ts";
+import { Prompt } from "./prompt/prompt.ts";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
 export class Container {
   private aiFunctions: Map<string, AiFunction> = new Map();
   private executionEngine: AiExecutionEngineBase;
+  private rules: Prompt[] = [];
 
   constructor(executionEngine: AiExecutionEngineBase) {
     this.executionEngine = executionEngine;
+  }
+
+  addRule(rule: string) {
+    this.rules.push(new Prompt(rule));
   }
 
   addAiFunction(aiFunction: AiFunction) {
@@ -24,14 +35,20 @@ export class Container {
     }
 
     aiFunction.validateVars(vars);
-    const prompt = aiFunction.render(vars);
-    console.log(prompt);
+    const prompt = aiFunction.getPrompt().merge(this.rules);
+    const renderedPrompt = prompt.render({
+      ...vars,
+      schema: JSON.stringify(zodToJsonSchema(aiFunction.responseSchema)),
+    });
 
     let lastError: Error | null = null;
     const MAX_ATTEMPTS = 3;
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       try {
-        const response = await this.executionEngine.execute({ prompt });
+        const response = await this.executionEngine.execute({
+          prompt: renderedPrompt,
+        });
+
         const parsedResponse = aiFunction.parseResponse(response);
 
         if (parsedResponse._error) {
