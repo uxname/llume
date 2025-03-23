@@ -25,6 +25,29 @@ export class Container {
     this.aiFunctions.set(aiFunction.name, aiFunction);
   }
 
+  // Helper method for retrying with exponential backoff
+  private async retry<T>(
+    fn: () => Promise<T>,
+    maxAttempts = 3,
+    baseDelay = 500, // начальное время задержки в мс
+  ): Promise<T> {
+    let attempt = 0;
+    while (attempt < maxAttempts) {
+      try {
+        return await fn();
+      } catch (error) {
+        attempt++;
+        if (attempt >= maxAttempts) {
+          throw error;
+        }
+        const delay = baseDelay * Math.pow(2, attempt - 1);
+        console.warn(`Attempt ${attempt} failed, retrying in ${delay} ms.`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+    throw new Error("Could not execute operation after multiple attempts");
+  }
+
   async executeAiFunction(
     aiFunctionName: string,
     vars: TemplateVars,
@@ -41,32 +64,16 @@ export class Container {
       schema: JSON.stringify(zodToJsonSchema(aiFunction.responseSchema)),
     });
 
-    let lastError: Error | null = null;
-    const MAX_ATTEMPTS = 3;
-    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-      try {
-        const response = await this.executionEngine.execute({
-          prompt: renderedPrompt,
-        });
+    return await this.retry(async () => {
+      const response = await this.executionEngine.execute({
+        prompt: renderedPrompt,
+      });
 
-        const parsedResponse = aiFunction.parseResponse(response);
-
-        if (parsedResponse._error) {
-          throw new Error(parsedResponse._error?.message);
-        }
-
-        return parsedResponse;
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-        console.warn(
-          `Attempt ${attempt} failed for "${aiFunctionName}": ${lastError.message}`,
-        );
-        if (attempt === MAX_ATTEMPTS) {
-          throw lastError;
-        }
+      const parsedResponse = aiFunction.parseResponse(response);
+      if (parsedResponse._error) {
+        throw new Error(parsedResponse._error?.message);
       }
-    }
-
-    throw lastError || new Error("Unknown error after retries");
+      return parsedResponse;
+    });
   }
 }

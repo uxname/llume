@@ -37,6 +37,7 @@ export class Ai0 extends AiExecutionEngineBase {
             "Content-Type": "application/json",
             Authorization: this.apiKey,
           },
+          timeout: 60000,
         },
       );
 
