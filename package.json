@@ -5,6 +5,8 @@
     "start": "bun run src/main.ts",
     "test": "vitest run --config vitest.config.ts",
     "test:watch": "vitest watch --config vitest.config.ts",
+    "ts:check": "bunx tsc --noEmit",
+    "check": "bun run ts:check && bun run lint",
     "lint": "bunx eslint",
     "lint:fix": "bun run lint --fix"
   },

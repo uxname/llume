@@ -25,11 +25,14 @@ export class Prompt {
     return ![...placeholders].some((ph) => rendered.includes(ph));
   }
 
-  private getValueFromPath(obj: unknown, path: string): unknown {
+  private getValueFromPath(
+    obj: Record<string, unknown>,
+    path: string,
+  ): unknown {
     try {
-      return path.split(".").reduce((acc, key) => {
-        if (acc == null) return undefined;
-        return acc[key];
+      return path.split(".").reduce<unknown>((acc, key) => {
+        if (acc == null || typeof acc !== "object") return undefined;
+        return (acc as Record<string, unknown>)[key];
       }, obj);
     } catch {
       return undefined;

@@ -15,6 +15,7 @@ export default defineConfig([
     plugins: { js },
     extends: ["js/recommended"],
   },
+  // @ts-expect-error not important
   tseslint.configs.recommended,
   eslintPluginPrettierRecommended,
 ]);

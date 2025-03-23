@@ -25,7 +25,10 @@ export abstract class LlmProviderBase {
     params: LLMRequestParams,
   ): Promise<string>;
 
-  protected log(color: LogColor = LogColor.White, ...messages: unknown): void {
+  protected log(
+    color: LogColor = LogColor.White,
+    ...messages: unknown[]
+  ): void {
     const colorCode = this.getColorCode(color);
     console.log(colorCode, messages[0], "\x1b[0m", ...messages.slice(1));
   }
