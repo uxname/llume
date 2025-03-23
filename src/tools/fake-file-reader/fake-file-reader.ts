@@ -24,9 +24,10 @@ export class FakeFileReader extends ToolBase<inputType, outputType> {
     };
   }
   async execute(params: inputType): Promise<{ content: string; name: string }> {
+    const linesCount = Math.floor(Math.random() * 30);
     return {
       name: params.path,
-      content: `Content of ${params.path}\n`.repeat(10),
+      content: `Content of ${params.path}\n`.repeat(linesCount),
     };
   }
 }

@@ -12,7 +12,7 @@ describe("Line counter", () => {
 
   test("should count lines", async () => {
     const result = await lineCounter.execute({
-      text: "Just a test\n".repeat(10),
+      filePath: "test.txt",
     });
 
     expect(result.count).toBe(10);

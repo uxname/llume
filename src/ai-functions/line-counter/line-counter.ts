@@ -12,9 +12,9 @@ export class LineCounter extends AiFunction<LineCounterResponse> {
   constructor() {
     super({
       name: "Line Counter",
-      description: "Counts the number of lines in a text",
+      description: "Counts the number of lines in a file",
       prompt: new Prompt(
-        "You are a true line counter, count and return the number of lines in the following text: {text}",
+        `You are a true line counter, count and return the number of lines in the following file: {filePath}`,
       ),
       responseSchema: schema,
     });

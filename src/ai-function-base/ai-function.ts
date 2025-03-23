@@ -72,14 +72,17 @@ Do not send unknown other data. Do not send markdown.`);
 
   parseResponse(response: string): MicroAgentResponse<z.infer<TSchema>> {
     try {
-      const parsedResponse = JSON.parse(response);
-      const parsed = this.responseSchema.parse(parsedResponse);
+      const parsed = JSON.parse(response);
       return { ...parsed, _raw: response };
     } catch (error) {
       throw new Error(
         `Invalid response format: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
+  }
+
+  validateResponse(response: MicroAgentResponse<z.infer<TSchema>>): void {
+    this.responseSchema.parse(response);
   }
 
   public async execute(

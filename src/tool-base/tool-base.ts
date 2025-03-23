@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
 export interface ToolMetadata<
   INPUT extends z.ZodType = z.ZodType,
@@ -20,6 +21,13 @@ export abstract class ToolBase<
   abstract execute(params: TInput): Promise<TOutput>;
 
   toString(): string {
-    return JSON.stringify(this.getMetadata());
+    const inputSchema = zodToJsonSchema(this.getMetadata().inputSchema);
+    const outputSchema = zodToJsonSchema(this.getMetadata().outputSchema);
+    return JSON.stringify({
+      name: this.getMetadata().name,
+      description: this.getMetadata().description,
+      inputSchema,
+      outputSchema,
+    });
   }
 }
