@@ -14,7 +14,7 @@ const outputSchema = z.object({
 
 type outputType = z.infer<typeof outputSchema>;
 
-export class FileReader extends ToolBase<inputType, outputType> {
+export class FakeFileReader extends ToolBase<inputType, outputType> {
   getMetadata(): ToolMetadata {
     return {
       name: "File Reader",

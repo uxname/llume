@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import { FileReader } from "./file-reader.ts";
+import { FakeFileReader } from "./fake-file-reader.ts";
 
-describe("File reader", () => {
+describe("Fake File reader", () => {
   test("should read file", async () => {
-    const fileReader = new FileReader();
+    const fileReader = new FakeFileReader();
     const filePath = "test.txt";
     const fileContent = await fileReader.execute({ path: filePath });
 
