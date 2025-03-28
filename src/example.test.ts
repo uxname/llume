@@ -1,23 +1,14 @@
 import { describe, expect, test } from "vitest";
 import { Executor } from "./core/executor.ts";
 import { StatelessFunction } from "./core/base-classes/stateless-function.ts";
-import { LLM } from "./core/base-classes/llm.ts";
 import { z } from "zod";
 import { PromptTemplate } from "./core/base-classes/prompt-template.ts";
 import { Tool } from "./core/base-classes/tool.ts";
+import { Ai0 } from "./core/llms/ai0.ts";
 
 describe("example", () => {
   test("should calculate", () => {
-    class FakeLLm extends LLM {
-      name = "FakeLLM";
-
-      async execute(prompt: string): Promise<string> {
-        // console.log("FakeLLM request:", prompt);
-        return '{"type": "success", "_data": {"number": 123, "string": "hello"}}';
-      }
-    }
-
-    const fakeLlm = new FakeLLm();
+    const llm = new Ai0(process.env.AI0_URL!, process.env.AI0_API_KEY!);
 
     const inputSchema = z.object({
       expression: z.string(),
@@ -30,7 +21,7 @@ describe("example", () => {
     type Output = z.infer<typeof outputSchema>;
 
     class Calculator extends StatelessFunction {
-      public llm = fakeLlm;
+      public llm = llm;
       public name = "Calculator";
       public description = "True calculator that calculates any expressions";
       public inputSchema = inputSchema;
@@ -52,23 +43,7 @@ describe("example", () => {
   });
 
   test("should tell weather", async () => {
-    class FakeLLm extends LLM {
-      name = "FakeLLM";
-      isFirstRun = true;
-
-      async execute(prompt: string): Promise<string> {
-        // console.log("FakeLLM request:", prompt);
-        // console.log({ callTool });
-        if (this.isFirstRun) {
-          this.isFirstRun = false;
-          return '{"_type": "call_tool", "_toolName": "Weather", "_input": {"city": "Minsk"}}';
-        }
-
-        return '{"_type": "success", "_data": {"result": 9, "humanReadable": "In Minsk it is 9 degrees Celcius"}}';
-      }
-    }
-
-    const fakeLlm = new FakeLLm();
+    const llm = new Ai0(process.env.AI0_URL!, process.env.AI0_API_KEY!);
 
     const inputSchema = z.object({
       city: z.string(),
@@ -96,7 +71,7 @@ describe("example", () => {
     }
 
     class Weather extends StatelessFunction {
-      public llm = fakeLlm;
+      public llm = llm;
       public name = "Weather";
       public description = "Tell weather for city";
       public inputSchema = inputSchema;
