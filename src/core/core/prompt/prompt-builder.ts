@@ -4,12 +4,7 @@ import { z } from "zod";
 import type { StatelessFunction, Variables } from "../stateless-function.ts";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type { Tool } from "../tool.ts";
-import {
-  BaseSuccessSchema,
-  CallToolSchema,
-  ErrorSchema,
-  StateCommandSchema,
-} from "./schemas.ts";
+import { BaseSuccessSchema, CallToolSchema, ErrorSchema } from "./schemas.ts";
 
 type ExecuteFunctionPromptParams = {
   history: string;
@@ -28,7 +23,6 @@ export class PromptBuilder {
       SuccessSchemaWithData,
       ErrorSchema,
       CallToolSchema,
-      StateCommandSchema,
     ]);
 
     return JSON.stringify(zodToJsonSchema(systemSchemas));

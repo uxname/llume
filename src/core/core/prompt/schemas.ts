@@ -24,22 +24,7 @@ export type ErrorType = z.infer<typeof ErrorSchema>;
 
 export type CallToolType = z.infer<typeof CallToolSchema>;
 
-export const StateCommandSchema = z.object({
-  _type: z.literal("change_state"),
-  _command: z.union([
-    z.literal("add").describe("Add a key-value pair to the state"),
-    z.literal("remove").describe("Remove a key-value pair from the state"),
-    z.literal("update").describe("Update a key-value pair in the state"),
-    z.literal("clear").describe("Clear the state"),
-  ]),
-  _key: z.string(),
-  _value: z.string(),
-});
-
-export type StateCommandType = z.infer<typeof StateCommandSchema>;
-
 export type LLMResult<T> =
   | { _type: "success"; _data: T }
   | ErrorType
-  | StateCommandType
   | CallToolType;

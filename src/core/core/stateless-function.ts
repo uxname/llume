@@ -3,11 +3,8 @@ import { PromptTemplate } from "./prompt-template.ts";
 import { Tool } from "./tool.ts";
 import { LLM } from "./llm.ts";
 
-type Primitive = string | number | boolean | null | undefined;
-
-export type Variables = {
-  [key: string]: Primitive | Variables;
-};
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Variables = Record<string, any>;
 
 export abstract class StatelessFunction<
   TInput extends Variables = Variables,
@@ -18,8 +15,8 @@ export abstract class StatelessFunction<
   public abstract name: string;
   public abstract description: string;
 
-  public abstract inputSchema: z.Schema<TInput>;
-  public abstract outputSchema: z.Schema<TOutput>;
+  public abstract inputSchema: z.Schema;
+  public abstract outputSchema: z.Schema;
 
   public abstract promptTemplate: PromptTemplate;
 

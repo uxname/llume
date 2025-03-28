@@ -53,20 +53,30 @@ describe("example", () => {
       city: z.string(),
     });
 
-    const outputSchema = z.object({
+    const outputToolSchema = z.object({
       result: z.number().describe("Degrees Celcius"),
       humanReadable: z.string().describe("Human readable result"),
     });
 
+    const outputSchema = z.array(
+      z
+        .object({
+          city: z.string().describe("City name"),
+          result: z.number().describe("Degrees Celcius"),
+          humanReadable: z.string().describe("Human readable result"),
+        })
+        .describe("Weather info in russian language"),
+    );
+
     type Input = z.infer<typeof inputSchema>;
     type ToolInput = z.infer<typeof toolInputSchema>;
-    type Output = z.infer<typeof outputSchema>;
+    type OutputFunction = z.infer<typeof outputSchema>;
 
     class WeatherTool extends Tool {
       public name = "Weather";
       public description = "Tell weather for city";
       public inputSchema = toolInputSchema;
-      public outputSchema = outputSchema;
+      public outputSchema = outputToolSchema;
       public execute = async (input: ToolInput) => {
         const degree = Math.floor(Math.random() * 10);
         return {
@@ -83,10 +93,8 @@ describe("example", () => {
       public inputSchema = inputSchema;
       public outputSchema = outputSchema;
       public promptTemplate: PromptTemplate = new PromptTemplate(
-        `Напиши какая погода в городах {{cities}}.
-        Используй WeatherTool чтобы получить погоду в каждом из них.
-        После получения результата - обязательно сохраняй результат погоды в state и дай ответ когда
-        будет известна погода во всех городах. Отвечай на русском языке.`,
+        `Узнай погоду в следующих городах: {{cities}}.
+Напиши ответ только когда будет известна погода как минимум в двух городах`,
       );
       public tools = [new WeatherTool()];
     }
@@ -95,9 +103,12 @@ describe("example", () => {
     const executor = new Executor();
     executor.addFunction(weather);
 
-    const result = await executor.smartExecute<Input, Output>(weather.name, {
-      cities: "Minsk and New York",
-    });
+    const result = await executor.smartExecute<Input, OutputFunction>(
+      weather.name,
+      {
+        cities: "Minsk, New York, London, Paris, Berlin, Madrid",
+      },
+    );
 
     console.log(result);
 

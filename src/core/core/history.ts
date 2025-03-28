@@ -1,3 +1,5 @@
+import type { Variables } from "./stateless-function.ts";
+
 export class History {
   public messages: Message[] = [];
 
@@ -12,11 +14,11 @@ export class History {
 
 export interface ToolResponseMessage {
   toolName: string;
-  toolResponse: object;
+  toolResponse: Variables;
 }
 
 export type Message = {
   role: "user" | "assistant";
-  content?: object | string | undefined;
+  content?: Variables | string | undefined;
   toolResponse?: ToolResponseMessage | undefined;
 };
