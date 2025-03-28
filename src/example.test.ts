@@ -19,8 +19,7 @@ describe("example", () => {
     const fakeLlm = new FakeLLm();
 
     const inputSchema = z.object({
-      num1: z.number(),
-      num2: z.number(),
+      expression: z.string(),
     });
     const outputSchema = z.object({
       result: z.number(),
@@ -32,11 +31,11 @@ describe("example", () => {
     class Calculator extends StatelessFunction {
       public llm = fakeLlm;
       public name = "Calculator";
-      public description = "Calculates the sum of two numbers";
+      public description = "True calculator that calculates any expressions";
       public inputSchema = inputSchema;
       public outputSchema = outputSchema;
       public promptTemplate: PromptTemplate = new PromptTemplate(
-        `Calculate the sum of {{ num1 }} and {{ num2 }}`,
+        `Calculate next expression: {{expression}}`,
       );
     }
 
@@ -45,8 +44,7 @@ describe("example", () => {
     executor.addFunction(calculator);
 
     executor.executeSingleFunction<Input, Output>(calculator.name, {
-      num1: 2,
-      num2: 3,
+      expression: "2 / 0",
     });
 
     expect(executor).toBeDefined();
