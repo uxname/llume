@@ -1,23 +1,16 @@
-import { ExecutionContextStore } from "./execution-context-store.ts";
-import type { Variables } from "./base-classes/stateless-function.ts";
+import type { StatelessFunction } from "./base-classes/stateless-function.ts";
+import { History, type Message } from "./base-classes/history.ts";
 
-export class ExecutionContext extends ExecutionContextStore {
-  async executeSingleFunction<
-    TInput extends Variables,
-    TOutput extends Variables,
-  >(functionName: string, input: TInput): Promise<TOutput> {
-    const aiFunction = this.functions.get(functionName);
-    if (!aiFunction) {
-      throw new Error(`Function ${functionName} not found`);
-    }
+export class ExecutionContext {
+  llmHistory = new History();
 
-    console.log(`Executing function ${functionName}, input:`, input);
+  protected functions: Map<string, StatelessFunction> = new Map();
 
-    return {
-      result: {
-        number: 123,
-        string: "hello",
-      },
-    } as unknown as TOutput;
+  addFunction(aiStatelessFunction: StatelessFunction): void {
+    this.functions.set(aiStatelessFunction.name, aiStatelessFunction);
+  }
+
+  addHistoryMessage(message: Message): void {
+    this.llmHistory.addMessage(message);
   }
 }

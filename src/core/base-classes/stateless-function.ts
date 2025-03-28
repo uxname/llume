@@ -9,21 +9,23 @@ export type Variables = {
   [key: string]: Primitive | Variables;
 };
 
-export class StatelessFunction<
+export abstract class StatelessFunction<
   TInput extends Variables = Variables,
   TOutput extends Variables = Variables,
 > {
-  constructor(
-    public llm: LLM,
-    public name: string,
-    public description: string,
-    public inputSchema: z.Schema<TInput>,
-    public outputSchema: z.Schema<TOutput>,
-    public systemPrompts: PromptTemplate[],
-    public prompts: PromptTemplate[],
-    public tools: Tool[],
-    public aiStatelessFunctions: StatelessFunction[],
-    public preRunMiddleware: (input: TInput) => Promise<TInput>,
-    public postRunMiddleware: (output: TOutput) => Promise<TOutput>,
-  ) {}
+  public abstract llm: LLM;
+
+  public abstract name: string;
+  public abstract description: string;
+
+  public abstract inputSchema: z.Schema<TInput>;
+  public abstract outputSchema: z.Schema<TOutput>;
+
+  public abstract promptTemplate: PromptTemplate;
+
+  public tools?: Tool[];
+  public aiStatelessFunctions?: StatelessFunction[];
+
+  public preRunMiddleware?: (input: TInput) => Promise<TInput>;
+  public postRunMiddleware?: (output: TOutput) => Promise<TOutput>;
 }

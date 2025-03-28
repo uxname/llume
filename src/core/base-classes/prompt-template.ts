@@ -3,6 +3,10 @@ import type { Variables } from "./stateless-function.ts";
 export class PromptTemplate {
   constructor(public readonly template: string) {}
 
+  /**
+   * Extracts all variables from the template using a regex pattern.
+   * Variables are enclosed in double curly braces, e.g., {{ variable }}.
+   */
   public getVariables(): string[] {
     const regex = /{{\s*(\w+)\s*}}/g;
     let matches: RegExpExecArray | null;
@@ -16,12 +20,12 @@ export class PromptTemplate {
 
     return variables;
   }
-}
 
-export class PromptRenderer<TVariables extends Variables> {
-  constructor(private readonly template: PromptTemplate) {}
-
-  public render(variables: TVariables): string {
+  /**
+   * Renders the template by replacing placeholders with their corresponding values.
+   * Throws an error if any required variables are missing.
+   */
+  public render<T extends Variables>(variables: T): string {
     const missingVariables = this.validate(variables);
     if (missingVariables.length > 0) {
       throw new Error(
@@ -29,9 +33,9 @@ export class PromptRenderer<TVariables extends Variables> {
       );
     }
 
-    let result = this.template.template;
+    let result = this.template;
 
-    for (const varName of this.template.getVariables()) {
+    for (const varName of this.getVariables()) {
       if (!(varName in variables)) {
         throw new Error(`Missing required variable: ${varName}`);
       }
@@ -44,10 +48,14 @@ export class PromptRenderer<TVariables extends Variables> {
     return result;
   }
 
-  public validate(variables: Partial<TVariables>): string[] {
+  /**
+   * Validates the provided variables against the template's required variables.
+   * Returns a list of missing variables.
+   */
+  public validate(variables: Partial<Variables>): string[] {
     const missingVariables: string[] = [];
 
-    for (const varName of this.template.getVariables()) {
+    for (const varName of this.getVariables()) {
       if (!(varName in variables)) {
         missingVariables.push(varName);
       }

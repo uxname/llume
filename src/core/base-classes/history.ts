@@ -6,15 +6,17 @@ export class History {
   }
 
   toString(): string {
-    return this.messages
-      .map((message) => `${message.role}: ${message.content}`)
-      .join("\n");
+    return JSON.stringify(this.messages);
   }
 }
 
-export class Message {
-  constructor(
-    public role: "user" | "assistant",
-    public content: string,
-  ) {}
+export interface ToolResponseMessage {
+  toolName: string;
+  toolResponse: string;
 }
+
+export type Message = {
+  role: "user" | "assistant";
+  content?: string | undefined;
+  toolResponse?: ToolResponseMessage | undefined;
+};
