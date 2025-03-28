@@ -24,7 +24,6 @@ export class Executor extends ExecutionContext {
 
     const prompt = PromptBuilder.buildExecuteFunctionPrompt(
       this.llmHistory,
-      this.state,
       aiFunction,
       input,
       aiFunction.tools ?? [],
@@ -102,22 +101,6 @@ export class Executor extends ExecutionContext {
           toolResponse: toolResult,
         },
       });
-
-      return await this.smartExecute(functionName, input);
-    }
-
-    if (result._type === "change_state") {
-      const { _command, _key, _value } = result;
-
-      if (_command === "add") {
-        this.state.set(_key, _value);
-      } else if (_command === "remove") {
-        this.state.delete(_key);
-      } else if (_command === "update") {
-        this.state.set(_key, _value);
-      } else if (_command === "clear") {
-        this.state.clear();
-      }
 
       return await this.smartExecute(functionName, input);
     }

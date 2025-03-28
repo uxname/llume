@@ -4,7 +4,6 @@ import { z } from "zod";
 import type { StatelessFunction, Variables } from "../stateless-function.ts";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type { Tool } from "../tool.ts";
-import { State } from "../state.ts";
 import {
   BaseSuccessSchema,
   CallToolSchema,
@@ -14,7 +13,6 @@ import {
 
 type ExecuteFunctionPromptParams = {
   history: string;
-  state: string;
   jsonSchemas: string;
   query: string;
   tools: string;
@@ -38,7 +36,6 @@ export class PromptBuilder {
 
   public static buildExecuteFunctionPrompt(
     history: History,
-    state: State,
     aiFunction: StatelessFunction,
     variables: Variables,
     tools: Tool[],
@@ -48,7 +45,6 @@ export class PromptBuilder {
     const result =
       EXECUTE_FUNCTION_PROMPT_TEMPLATE.render<ExecuteFunctionPromptParams>({
         history: history.toString(),
-        state: state.toString(),
         jsonSchemas: schemasString,
         query: aiFunction.promptTemplate.render(variables),
         tools: tools.map((tool) => tool.toString()).join("\n"),

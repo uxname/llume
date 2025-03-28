@@ -1,10 +1,8 @@
 import type { StatelessFunction } from "./core/stateless-function.ts";
 import { History, type Message } from "./core/history.ts";
-import { State } from "./core/state.ts";
 
 export class ExecutionContext {
   llmHistory = new History();
-  state = new State();
 
   protected functions: Map<string, StatelessFunction> = new Map();
 
