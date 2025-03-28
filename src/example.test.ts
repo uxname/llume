@@ -12,7 +12,7 @@ describe("example", () => {
 
       async execute(prompt: string): Promise<string> {
         console.log("FakeLLM request:", prompt);
-        return '{"type": "success", "data": {"number": 123, "string": "hello"}}';
+        return '{"type": "success", "_data": {"number": 123, "string": "hello"}}';
       }
     }
 

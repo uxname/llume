@@ -42,7 +42,7 @@ export type LLMResult<T> =
 export class PromptBuilder {
   public static mergeSystemSchemas(aiFunction: StatelessFunction): string {
     const SuccessSchemaWithData = BaseSuccessSchema.extend({
-      data: aiFunction.outputSchema,
+      _data: aiFunction.outputSchema,
     });
 
     const systemSchemas = z.discriminatedUnion("_type", [
