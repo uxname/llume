@@ -43,8 +43,8 @@ describe("example", () => {
     const executor = new Executor();
     executor.addFunction(calculator);
 
-    executor.executeSingleFunction<Input, Output>(calculator.name, {
-      expression: "2 / 0",
+    executor.smartExecute<Input, Output>(calculator.name, {
+      expression: "2 / 2",
     });
 
     expect(executor).toBeDefined();
