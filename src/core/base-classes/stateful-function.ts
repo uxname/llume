@@ -1,17 +1,14 @@
 import { State } from "./state.ts";
-import {
-  AiStatelessFunction,
-  type Variables,
-} from "./ai-stateless-function.ts";
-import type { AiArea } from "../ai-area.ts";
+import { StatelessFunction, type Variables } from "./stateless-function.ts";
+import type { ExecutionContextStore } from "../execution-context-store.ts";
 
-export class AiStatefulFunction<
+export class StatefulFunction<
   TInput extends Variables = Variables,
   TOutput extends Variables = Variables,
-> extends AiStatelessFunction<TInput, TOutput> {
+> extends StatelessFunction<TInput, TOutput> {
   constructor(
-    base: AiStatelessFunction<TInput, TOutput>,
-    public area: AiArea,
+    base: StatelessFunction<TInput, TOutput>,
+    public area: ExecutionContextStore,
     public state: State,
   ) {
     super(

@@ -1,4 +1,4 @@
-import type { Variables } from "./ai-stateless-function.ts";
+import type { Variables } from "./stateless-function.ts";
 
 export class PromptTemplate {
   constructor(public readonly template: string) {}

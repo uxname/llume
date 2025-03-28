@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Variables } from "./ai-stateless-function.ts";
+import type { Variables } from "./stateless-function.ts";
 
 export class Tool<
   TInput extends Variables = Variables,
