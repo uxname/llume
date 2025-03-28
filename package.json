@@ -28,6 +28,7 @@
     "dotenv": "^16.4.7",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.3",
+    "picocolors": "^1.1.1",
     "prettier": "^3.5.3",
     "zod": "^3.24.2",
     "zod-to-json-schema": "^3.24.4"

@@ -1,13 +1,13 @@
 import { describe, expect, test } from "vitest";
 import { Executor } from "./core/executor.ts";
-import { StatelessFunction } from "./core/base-classes/stateless-function.ts";
+import { StatelessFunction } from "./core/core/stateless-function.ts";
 import { z } from "zod";
-import { PromptTemplate } from "./core/base-classes/prompt-template.ts";
-import { Tool } from "./core/base-classes/tool.ts";
+import { PromptTemplate } from "./core/core/prompt-template.ts";
+import { Tool } from "./core/core/tool.ts";
 import { Ai0 } from "./core/llms/ai0.ts";
 
 describe("example", () => {
-  test("should calculate", () => {
+  test("should calculate", async () => {
     const llm = new Ai0(process.env.AI0_URL!, process.env.AI0_API_KEY!);
 
     const inputSchema = z.object({
@@ -27,7 +27,7 @@ describe("example", () => {
       public inputSchema = inputSchema;
       public outputSchema = outputSchema;
       public promptTemplate: PromptTemplate = new PromptTemplate(
-        `Calculate next expression: {{expression}}`,
+        `Without tools calculate next expression: {{expression}}`,
       );
     }
 
@@ -35,37 +35,43 @@ describe("example", () => {
     const executor = new Executor();
     executor.addFunction(calculator);
 
-    executor.smartExecute<Input, Output>(calculator.name, {
+    const result = await executor.smartExecute<Input, Output>(calculator.name, {
       expression: "2 / 2",
     });
 
-    expect(executor).toBeDefined();
+    expect(result.result).toBe(1);
   });
 
   test("should tell weather", async () => {
     const llm = new Ai0(process.env.AI0_URL!, process.env.AI0_API_KEY!);
 
     const inputSchema = z.object({
+      cities: z.string(),
+    });
+
+    const toolInputSchema = z.object({
       city: z.string(),
     });
+
     const outputSchema = z.object({
       result: z.number().describe("Degrees Celcius"),
       humanReadable: z.string().describe("Human readable result"),
     });
 
     type Input = z.infer<typeof inputSchema>;
+    type ToolInput = z.infer<typeof toolInputSchema>;
     type Output = z.infer<typeof outputSchema>;
 
     class WeatherTool extends Tool {
       public name = "Weather";
       public description = "Tell weather for city";
-      public inputSchema = inputSchema;
+      public inputSchema = toolInputSchema;
       public outputSchema = outputSchema;
-      public execute = async (input: Input) => {
-        // console.log('Tool "Weather" request:', input);
+      public execute = async (input: ToolInput) => {
+        const degree = Math.floor(Math.random() * 10);
         return {
-          result: 9,
-          humanReadable: "9 degrees Celcius",
+          result: degree,
+          humanReadable: `${degree} degrees Celcius in ${input.city}`,
         };
       };
     }
@@ -77,7 +83,10 @@ describe("example", () => {
       public inputSchema = inputSchema;
       public outputSchema = outputSchema;
       public promptTemplate: PromptTemplate = new PromptTemplate(
-        `Tell weather for city: {{city}}`,
+        `Напиши какая погода в городах {{cities}}.
+        Используй WeatherTool чтобы получить погоду в каждом из них.
+        После получения результата - обязательно сохраняй результат погоды в state и дай ответ когда
+        будет известна погода во всех городах. Отвечай на русском языке.`,
       );
       public tools = [new WeatherTool()];
     }
@@ -87,7 +96,7 @@ describe("example", () => {
     executor.addFunction(weather);
 
     const result = await executor.smartExecute<Input, Output>(weather.name, {
-      city: "Minsk",
+      cities: "Minsk and New York",
     });
 
     console.log(result);

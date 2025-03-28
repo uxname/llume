@@ -1,8 +1,10 @@
-import type { StatelessFunction } from "./base-classes/stateless-function.ts";
-import { History, type Message } from "./base-classes/history.ts";
+import type { StatelessFunction } from "./core/stateless-function.ts";
+import { History, type Message } from "./core/history.ts";
+import { State } from "./core/state.ts";
 
 export class ExecutionContext {
   llmHistory = new History();
+  state = new State();
 
   protected functions: Map<string, StatelessFunction> = new Map();
 
@@ -11,21 +13,18 @@ export class ExecutionContext {
   }
 
   addHistoryMessage(message: Message): void {
-    // Формируем заголовок с учетом toolName
     const header = `[${message.role.toUpperCase()}${
       message.toolResponse?.toolName
         ? " (" + message.toolResponse.toolName + ")"
         : ""
     }]`;
 
-    // Определяем содержимое сообщения
     const content =
       typeof message.content === "string"
         ? message.content
         : JSON.stringify(message.content) ||
           JSON.stringify(message.toolResponse?.toolResponse);
 
-    // Выравниваем заголовок по левому краю с фиксированной шириной
     const formattedMessage = `${header.padEnd(24)}${content}`;
 
     console.log(formattedMessage);

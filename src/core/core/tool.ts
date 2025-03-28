@@ -13,7 +13,7 @@ export abstract class Tool<
   public abstract outputSchema: z.Schema<TOutput>;
   public abstract execute(input: TInput): Promise<TOutput>;
 
-  public async toString(): Promise<string> {
+  public toString(): string {
     return JSON.stringify({
       name: this.name,
       description: this.description,

@@ -1,5 +1,6 @@
 import axios from "axios";
-import { LLM } from "../base-classes/llm.ts";
+import { LLM } from "../core/llm.ts";
+import pc from "picocolors";
 
 export interface Ai0RequestParams {
   prompt: string;
@@ -49,6 +50,9 @@ export class Ai0 extends LLM {
   public async execute(prompt: string): Promise<string> {
     const params: Ai0RequestParams = { prompt };
     const response = await this.generateResponse(params);
+
+    // console.log(pc.blue(prompt));
+    // console.log(pc.bgYellowBright(response));
 
     // remove ```json and ``` from start and end of response only, but not in the middle
     return response

@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ExecutionContext } from "./execution-context.ts";
-import type { Variables } from "./base-classes/stateless-function.ts";
-import {
-  type BaseSuccessType,
-  type CallToolType,
-  type ErrorType,
-  type LLMResult,
-  PromptBuilder,
-} from "./prompt-builder.ts";
+import type { Variables } from "./core/stateless-function.ts";
+import { PromptBuilder } from "./core/prompt/prompt-builder.ts";
+import type {
+  BaseSuccessType,
+  CallToolType,
+  ErrorType,
+  LLMResult,
+} from "./core/prompt/schemas.ts";
 
 export class Executor extends ExecutionContext {
   async executeSingleFunction<
@@ -24,6 +24,7 @@ export class Executor extends ExecutionContext {
 
     const prompt = PromptBuilder.buildExecuteFunctionPrompt(
       this.llmHistory,
+      this.state,
       aiFunction,
       input,
       aiFunction.tools ?? [],
@@ -101,6 +102,22 @@ export class Executor extends ExecutionContext {
           toolResponse: toolResult,
         },
       });
+
+      return await this.smartExecute(functionName, input);
+    }
+
+    if (result._type === "change_state") {
+      const { _command, _key, _value } = result;
+
+      if (_command === "add") {
+        this.state.set(_key, _value);
+      } else if (_command === "remove") {
+        this.state.delete(_key);
+      } else if (_command === "update") {
+        this.state.set(_key, _value);
+      } else if (_command === "clear") {
+        this.state.clear();
+      }
 
       return await this.smartExecute(functionName, input);
     }

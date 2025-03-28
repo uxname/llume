@@ -1,7 +1,12 @@
-import { PromptTemplate } from "../base-classes/prompt-template.ts";
+import { PromptTemplate } from "../../prompt-template.ts";
 
 export const EXECUTE_FUNCTION_PROMPT_TEMPLATE =
-  new PromptTemplate(`Ты - умный ассистент.
+  new PromptTemplate(`Ты - умный ассистент который может выполнять любые задачи.
+У тебя есть state для хранения данных, state это key-value хранилище в формате JSON.
+
+Ты можешь вызывать различные команды путём ответа в формате JSON.
+Чтобы изменить state, ты должен вызвать команду change_state.
+
 Твоя задача - ответить на вопрос пользователя если тебе хватает данных.
 Если тебе не хватает данных - можешь попросить вызвать одну из предоставленных tool.
 
@@ -10,6 +15,9 @@ export const EXECUTE_FUNCTION_PROMPT_TEMPLATE =
 
 Вот история взаимодействия с пользователем:
 {{history}}
+
+Вот содержимое state:
+{{state}}
 
 Твой ответ должен быть строго определённого формата:
 {{jsonSchemas}}

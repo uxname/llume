@@ -1,45 +1,24 @@
 import { EXECUTE_FUNCTION_PROMPT_TEMPLATE } from "./prompts/execute-function.ts";
-import { History } from "./base-classes/history.ts";
+import { History } from "../history.ts";
 import { z } from "zod";
-import type {
-  StatelessFunction,
-  Variables,
-} from "./base-classes/stateless-function.ts";
+import type { StatelessFunction, Variables } from "../stateless-function.ts";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import type { Tool } from "./base-classes/tool.ts";
+import type { Tool } from "../tool.ts";
+import { State } from "../state.ts";
+import {
+  BaseSuccessSchema,
+  CallToolSchema,
+  ErrorSchema,
+  StateCommandSchema,
+} from "./schemas.ts";
 
 type ExecuteFunctionPromptParams = {
   history: string;
+  state: string;
   jsonSchemas: string;
   query: string;
   tools: string;
 };
-
-const VariablesSchema = z.record(z.any());
-
-const BaseSuccessSchema = z.object({
-  _type: z.literal("success"),
-  _data: VariablesSchema,
-});
-export type BaseSuccessType = z.infer<typeof BaseSuccessSchema>;
-
-const ErrorSchema = z.object({
-  _type: z.literal("error"),
-  _message: z.string(),
-});
-export type ErrorType = z.infer<typeof ErrorSchema>;
-
-const CallToolSchema = z.object({
-  _type: z.literal("call_tool"),
-  _toolName: z.string(),
-  _input: VariablesSchema,
-});
-export type CallToolType = z.infer<typeof CallToolSchema>;
-
-export type LLMResult<T> =
-  | { _type: "success"; _data: T }
-  | ErrorType
-  | CallToolType;
 
 export class PromptBuilder {
   public static mergeSystemSchemas(aiFunction: StatelessFunction): string {
@@ -51,6 +30,7 @@ export class PromptBuilder {
       SuccessSchemaWithData,
       ErrorSchema,
       CallToolSchema,
+      StateCommandSchema,
     ]);
 
     return JSON.stringify(zodToJsonSchema(systemSchemas));
@@ -58,6 +38,7 @@ export class PromptBuilder {
 
   public static buildExecuteFunctionPrompt(
     history: History,
+    state: State,
     aiFunction: StatelessFunction,
     variables: Variables,
     tools: Tool[],
@@ -67,9 +48,10 @@ export class PromptBuilder {
     const result =
       EXECUTE_FUNCTION_PROMPT_TEMPLATE.render<ExecuteFunctionPromptParams>({
         history: history.toString(),
+        state: state.toString(),
         jsonSchemas: schemasString,
         query: aiFunction.promptTemplate.render(variables),
-        tools: JSON.stringify(tools),
+        tools: tools.map((tool) => tool.toString()).join("\n"),
       });
 
     return result.trim();
