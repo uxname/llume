@@ -57,12 +57,13 @@ export class Executor extends ExecutionContext {
   async smartExecute<TInput extends Variables, TOutput extends Variables>(
     functionName: string,
     input: TInput,
-    isFirstRun: boolean = true,
   ): Promise<TOutput> {
     const aiFunction = this.functions.get(functionName);
     if (!aiFunction) {
       throw new Error(`Function ${functionName} not found`);
     }
+
+    const isFirstRun = this.llmHistory.messages.length === 0;
 
     if (isFirstRun) {
       this.addHistoryMessage({
@@ -101,7 +102,7 @@ export class Executor extends ExecutionContext {
         },
       });
 
-      return await this.smartExecute(functionName, input, false);
+      return await this.smartExecute(functionName, input);
     }
 
     throw new Error("Unknown result type");

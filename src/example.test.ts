@@ -12,7 +12,7 @@ describe("example", () => {
       name = "FakeLLM";
 
       async execute(prompt: string): Promise<string> {
-        console.log("FakeLLM request:", prompt);
+        // console.log("FakeLLM request:", prompt);
         return '{"type": "success", "_data": {"number": 123, "string": "hello"}}';
       }
     }
@@ -54,12 +54,13 @@ describe("example", () => {
   test("should tell weather", async () => {
     class FakeLLm extends LLM {
       name = "FakeLLM";
+      isFirstRun = true;
 
       async execute(prompt: string): Promise<string> {
-        console.log("FakeLLM request:", prompt);
-        const callTool = Math.random() > 0.5;
-        console.log({ callTool });
-        if (callTool) {
+        // console.log("FakeLLM request:", prompt);
+        // console.log({ callTool });
+        if (this.isFirstRun) {
+          this.isFirstRun = false;
           return '{"_type": "call_tool", "_toolName": "Weather", "_input": {"city": "Minsk"}}';
         }
 
@@ -86,7 +87,7 @@ describe("example", () => {
       public inputSchema = inputSchema;
       public outputSchema = outputSchema;
       public execute = async (input: Input) => {
-        console.log('Tool "Weather" request:', input);
+        // console.log('Tool "Weather" request:', input);
         return {
           result: 9,
           humanReadable: "9 degrees Celcius",
