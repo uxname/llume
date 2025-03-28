@@ -26,6 +26,7 @@ export class Executor extends ExecutionContext {
       this.llmHistory,
       aiFunction,
       input,
+      aiFunction.tools ?? [],
     );
 
     console.log("!!!!!!!!!!!!", prompt);

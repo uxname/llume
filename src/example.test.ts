@@ -4,9 +4,10 @@ import { StatelessFunction } from "./core/base-classes/stateless-function.ts";
 import { LLM } from "./core/base-classes/llm.ts";
 import { z } from "zod";
 import { PromptTemplate } from "./core/base-classes/prompt-template.ts";
+import { Tool } from "./core/base-classes/tool.ts";
 
 describe("example", () => {
-  test("should work", () => {
+  test("should calculate", () => {
     class FakeLLm extends LLM {
       name = "FakeLLM";
 
@@ -45,6 +46,66 @@ describe("example", () => {
 
     executor.smartExecute<Input, Output>(calculator.name, {
       expression: "2 / 2",
+    });
+
+    expect(executor).toBeDefined();
+  });
+
+  test("should tell weather", () => {
+    class FakeLLm extends LLM {
+      name = "FakeLLM";
+
+      async execute(prompt: string): Promise<string> {
+        console.log("FakeLLM request:", prompt);
+        return '{"type": "success", "_data": {"number": 123, "string": "hello"}}';
+      }
+    }
+
+    const fakeLlm = new FakeLLm();
+
+    const inputSchema = z.object({
+      city: z.string(),
+    });
+    const outputSchema = z.object({
+      result: z.number().describe("Degrees Celcius"),
+      humanReadable: z.string().describe("Human readable result"),
+    });
+
+    type Input = z.infer<typeof inputSchema>;
+    type Output = z.infer<typeof outputSchema>;
+
+    class WeatherTool extends Tool {
+      public name = "Weather";
+      public description = "Tell weather for city";
+      public inputSchema = inputSchema;
+      public outputSchema = outputSchema;
+      public execute = async (input: Input) => {
+        console.log('Tool "Weather" request:', input);
+        return {
+          result: 9,
+          humanReadable: "9 degrees Celcius",
+        };
+      };
+    }
+
+    class Weather extends StatelessFunction {
+      public llm = fakeLlm;
+      public name = "Weather";
+      public description = "Tell weather for city";
+      public inputSchema = inputSchema;
+      public outputSchema = outputSchema;
+      public promptTemplate: PromptTemplate = new PromptTemplate(
+        `Tell weather for city: {{city}}`,
+      );
+      public tools = [new WeatherTool()];
+    }
+
+    const weather = new Weather();
+    const executor = new Executor();
+    executor.addFunction(weather);
+
+    executor.smartExecute<Input, Output>(weather.name, {
+      city: "Minsk",
     });
 
     expect(executor).toBeDefined();

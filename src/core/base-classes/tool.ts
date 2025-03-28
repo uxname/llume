@@ -1,16 +1,24 @@
 import { z } from "zod";
 import type { Variables } from "./stateless-function.ts";
+import { zodToJsonSchema } from "zod-to-json-schema";
 
-export class Tool<
+export abstract class Tool<
   TInput extends Variables = Variables,
   TOutput extends Variables = Variables,
 > {
-  constructor(
-    public name: string,
-    public description: string,
+  public abstract name: string;
+  public abstract description: string;
 
-    public inputSchema: z.Schema<TInput>,
-    public outputSchema: z.Schema<TOutput>,
-    public execute: (input: TInput) => Promise<TOutput>,
-  ) {}
+  public abstract inputSchema: z.Schema<TInput>;
+  public abstract outputSchema: z.Schema<TOutput>;
+  public abstract execute(input: TInput): Promise<TOutput>;
+
+  public async toString(): Promise<string> {
+    return JSON.stringify({
+      name: this.name,
+      description: this.description,
+      inputSchema: zodToJsonSchema(this.inputSchema),
+      outputSchema: zodToJsonSchema(this.outputSchema),
+    });
+  }
 }

@@ -6,11 +6,13 @@ import type {
   Variables,
 } from "./base-classes/stateless-function.ts";
 import { zodToJsonSchema } from "zod-to-json-schema";
+import type { Tool } from "./base-classes/tool.ts";
 
 type ExecuteFunctionPromptParams = {
   history: string;
   jsonSchemas: string;
   query: string;
+  tools: string;
 };
 
 const VariablesSchema = z.record(z.any());
@@ -58,6 +60,7 @@ export class PromptBuilder {
     history: History,
     aiFunction: StatelessFunction,
     variables: Variables,
+    tools: Tool[],
   ): string {
     const schemasString = this.mergeSystemSchemas(aiFunction);
 
@@ -66,6 +69,7 @@ export class PromptBuilder {
         history: history.toString(),
         jsonSchemas: schemasString,
         query: aiFunction.promptTemplate.render(variables),
+        tools: JSON.stringify(tools),
       });
 
     return result.trim();
