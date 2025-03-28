@@ -51,13 +51,19 @@ describe("example", () => {
     expect(executor).toBeDefined();
   });
 
-  test("should tell weather", () => {
+  test("should tell weather", async () => {
     class FakeLLm extends LLM {
       name = "FakeLLM";
 
       async execute(prompt: string): Promise<string> {
         console.log("FakeLLM request:", prompt);
-        return '{"type": "success", "_data": {"number": 123, "string": "hello"}}';
+        const callTool = Math.random() > 0.5;
+        console.log({ callTool });
+        if (callTool) {
+          return '{"_type": "call_tool", "_toolName": "Weather", "_input": {"city": "Minsk"}}';
+        }
+
+        return '{"_type": "success", "_data": {"result": 9, "humanReadable": "In Minsk it is 9 degrees Celcius"}}';
       }
     }
 
@@ -104,9 +110,11 @@ describe("example", () => {
     const executor = new Executor();
     executor.addFunction(weather);
 
-    executor.smartExecute<Input, Output>(weather.name, {
+    const result = await executor.smartExecute<Input, Output>(weather.name, {
       city: "Minsk",
     });
+
+    console.log(result);
 
     expect(executor).toBeDefined();
   });

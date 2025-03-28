@@ -29,31 +29,9 @@ export class Executor extends ExecutionContext {
       aiFunction.tools ?? [],
     );
 
-    console.log("!!!!!!!!!!!!", prompt);
+    const response = await aiFunction.llm.execute(prompt);
 
-    const success: BaseSuccessType = {
-      _type: "success",
-      _data: {
-        number: 123,
-        string: "hello",
-      },
-    };
-
-    const error: ErrorType = {
-      _type: "error",
-      _message: "Something went wrong",
-    };
-
-    const callTool: CallToolType = {
-      _type: "call_tool",
-      _toolName: "tool1",
-      _input: {
-        number: 123,
-        string: "hello",
-      },
-    };
-
-    return success;
+    return JSON.parse(response);
   }
 
   async callTool<TInput extends Variables, TOutput extends Variables>(
@@ -97,7 +75,7 @@ export class Executor extends ExecutionContext {
 
     this.addHistoryMessage({
       role: "assistant",
-      content: JSON.stringify(result),
+      content: result,
     });
 
     if (result._type === "error") {
@@ -119,7 +97,7 @@ export class Executor extends ExecutionContext {
         role: "user",
         toolResponse: {
           toolName: result._toolName,
-          toolResponse: JSON.stringify(toolResult),
+          toolResponse: toolResult,
         },
       });
 

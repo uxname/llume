@@ -12,11 +12,11 @@ export class History {
 
 export interface ToolResponseMessage {
   toolName: string;
-  toolResponse: string;
+  toolResponse: object;
 }
 
 export type Message = {
   role: "user" | "assistant";
-  content?: string | undefined;
+  content?: object | string | undefined;
   toolResponse?: ToolResponseMessage | undefined;
 };
