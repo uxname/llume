@@ -121,10 +121,14 @@ describe("example", () => {
 
     const inputSchema = z.object({
       query: z.string().describe("Search query for products"),
+      limit: z.number().optional().describe("Number of products to return"),
+      offset: z.number().optional().describe("Offset for pagination"),
     });
 
     const toolInputSchema = z.object({
       query: z.string().describe("Product search query"),
+      limit: z.number().describe("Number of products to return"),
+      offset: z.number().describe("Offset for pagination"),
     });
 
     const outputToolSchema = z.object({
@@ -190,21 +194,43 @@ describe("example", () => {
           price: 109.99,
           description: "Клёвые кроссовки с поддержкой стопы",
         },
+        {
+          name: "Кроссовки Nike Black",
+          price: 129.99,
+          description: "Красные кроссовки с амортизацией",
+        },
+        {
+          name: "Кроссовки Adidas Black",
+          price: 129.99,
+          description: "Красные кроссовки с амортизацией",
+        },
+        {
+          name: "Кроссовки Puma Black",
+          price: 129.99,
+          description: "Красные кроссовки с амортизацией",
+        },
+        {
+          name: "Кроссовки Reebok Black",
+          price: 129.99,
+          description: "Красные кроссовки с амортизацией",
+        },
       ];
 
       public execute = async (input: ToolInput) => {
         this.attemptCount++;
 
-        if (this.attemptCount <= 4) {
-          // Возвращаем случайные 3 нерелевантных товара
+        const { query, limit = 3, offset = 0 } = input;
+
+        if (this.attemptCount <= 2) {
           const shuffled = this.irrelevantProducts.sort(
             () => 0.5 - Math.random(),
           );
-          return { products: shuffled.slice(0, 3) };
+          return { products: shuffled.slice(offset, offset + limit) };
         }
 
-        // С 5-й попытки возвращаем релевантные товары
-        return { products: this.relevantProducts };
+        return {
+          products: this.relevantProducts.slice(offset, offset + limit),
+        };
       };
     }
 
@@ -244,7 +270,7 @@ describe("example", () => {
 
     const finalResult = await executor.smartExecute<Input, OutputFunction>(
       productSearch.name,
-      { query: "синие кроссовки" },
+      { query: "синие кроссовки", limit: 2, offset: 1 },
     );
 
     console.log(JSON.stringify(finalResult, null, 2));
