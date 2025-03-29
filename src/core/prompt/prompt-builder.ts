@@ -1,4 +1,4 @@
-import { EXECUTE_FUNCTION_PROMPT_TEMPLATE } from "./templates/execute-function-prompt.ts";
+import { EXECUTE_AI_FUNCTION_TEMPLATE } from "./templates/execute-function-prompt.ts";
 import { History } from "../history.ts";
 import { z } from "zod";
 import type { AiFunction, FunctionVariables } from "../ai-function.ts";
@@ -55,7 +55,7 @@ export class PromptBuilder {
     };
 
     const result =
-      EXECUTE_FUNCTION_PROMPT_TEMPLATE.render<ExecuteFunctionPromptParams>(
+      EXECUTE_AI_FUNCTION_TEMPLATE.render<ExecuteFunctionPromptParams>(
         promptParams,
       );
 

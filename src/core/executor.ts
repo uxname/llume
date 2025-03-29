@@ -28,7 +28,7 @@ export class Executor extends ExecutionContext {
 
     // Строим промпт, используя ограниченную историю и текущий ввод
     const prompt = PromptBuilder.buildExecuteFunctionPrompt(
-      this.llmHistory, // Передаем весь объект History
+      this.executionHistory, // Передаем весь объект History
       aiFunction,
       input, // Передаем текущие переменные для рендеринга {{query}}
       aiFunction.tools ?? [],
@@ -175,9 +175,11 @@ export class Executor extends ExecutionContext {
       // Добавляем только если это первый запуск для этого Executor'а ИЛИ
       // если последнее сообщение не точно такое же (предотвращение дублей при retry)
       if (
-        this.llmHistory.messages.length === 0 ||
+        this.executionHistory.messages.length === 0 ||
         JSON.stringify(
-          this.llmHistory.messages[this.llmHistory.messages.length - 1],
+          this.executionHistory.messages[
+            this.executionHistory.messages.length - 1
+          ],
         ) !== JSON.stringify({ role: "user", content: initialUserQuery })
       ) {
         this.addHistoryMessage({

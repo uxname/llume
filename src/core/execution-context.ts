@@ -2,7 +2,7 @@ import type { AiFunction } from "./ai-function.ts";
 import { History, type HistoryMessage } from "./history.ts";
 
 export class ExecutionContext {
-  public llmHistory = new History();
+  public executionHistory = new History();
   public readonly historyLimit: number; // Делаем его публичным readonly
 
   protected functions: Map<string, AiFunction> = new Map();
@@ -26,6 +26,6 @@ export class ExecutionContext {
   }
 
   addHistoryMessage(message: HistoryMessage): void {
-    this.llmHistory.addMessage(message);
+    this.executionHistory.addMessage(message);
   }
 }

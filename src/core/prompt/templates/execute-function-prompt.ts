@@ -1,6 +1,6 @@
 import { PromptTemplate } from "../../prompt-template.ts";
 
-export const EXECUTE_FUNCTION_PROMPT_TEMPLATE =
+export const EXECUTE_AI_FUNCTION_TEMPLATE =
   new PromptTemplate(`Ты - умный ассистент который может выполнять любые задачи.
 
 Ты можешь вызывать различные команды путём ответа в формате JSON.

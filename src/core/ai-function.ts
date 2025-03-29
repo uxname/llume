@@ -25,7 +25,7 @@ export abstract class AiFunction<
   public abstract promptTemplate: PromptTemplate;
 
   public tools?: Tool[];
-  public aiFunctions?: AiFunction[];
+  public childAiFunctions?: AiFunction[];
 
   private middlewares: MiddlewareFunction[] = [];
 
