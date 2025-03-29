@@ -1,6 +1,6 @@
 import axios from "axios";
 import { LLM } from "../core/llm.ts";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 import pc from "picocolors";
 
 export interface Ai0RequestParams {

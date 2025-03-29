@@ -7,7 +7,7 @@ import type { Tool } from "../tool.ts";
 import { BaseSuccessSchema, CallToolSchema, ErrorSchema } from "./schemas.ts";
 
 type ExecuteFunctionPromptParams = {
-  history: string;
+  history: string; // Теперь это будет строка с ограниченной историей
   jsonSchemas: string;
   query: string;
   tools: string;
@@ -25,7 +25,13 @@ export class PromptBuilder {
       CallToolSchema,
     ]);
 
-    return JSON.stringify(zodToJsonSchema(systemSchemas));
+    // Используем ZodToJsonSchema с опциями для лучшего описания
+    const jsonSchema = zodToJsonSchema(systemSchemas, {
+      $refStrategy: "none", // Избегаем $ref для совместимости с некоторыми LLM
+      definitionPath: "schemas", // Добавляем префикс
+    });
+
+    return JSON.stringify(jsonSchema);
   }
 
   public static buildExecuteFunctionPrompt(
@@ -33,16 +39,25 @@ export class PromptBuilder {
     aiFunction: StatelessFunction,
     variables: Variables,
     tools: Tool[],
+    historyLimit: number,
   ): string {
     const schemasString = this.mergeSystemSchemas(aiFunction);
+    const limitedHistoryString =
+      history.getLimitedMessagesAsString(historyLimit);
+
+    const userQueryRendered = aiFunction.promptTemplate.render(variables);
+
+    const promptParams: ExecuteFunctionPromptParams = {
+      history: limitedHistoryString,
+      jsonSchemas: schemasString,
+      query: userQueryRendered,
+      tools: tools.map((tool) => tool.toString()).join("\n\n"),
+    };
 
     const result =
-      EXECUTE_FUNCTION_PROMPT_TEMPLATE.render<ExecuteFunctionPromptParams>({
-        history: history.toString(),
-        jsonSchemas: schemasString,
-        query: aiFunction.promptTemplate.render(variables),
-        tools: tools.map((tool) => tool.toString()).join("\n"),
-      });
+      EXECUTE_FUNCTION_PROMPT_TEMPLATE.render<ExecuteFunctionPromptParams>(
+        promptParams,
+      );
 
     return result.trim();
   }
