@@ -114,4 +114,126 @@ describe("example", () => {
 
     expect(executor).toBeDefined();
   });
+
+  test("should retry product search and find relevant products after 4 attempts", async () => {
+    const llm = new Ai0(process.env.AI0_URL!, process.env.AI0_API_KEY!);
+
+    const inputSchema = z.object({
+      query: z.string().describe("Search query for products"),
+    });
+
+    const toolInputSchema = z.object({
+      query: z.string().describe("Product search query"),
+    });
+
+    const outputToolSchema = z.object({
+      products: z.array(
+        z.object({
+          name: z.string().describe("Product name"),
+          price: z.number().describe("Price in USD"),
+          description: z.string().describe("Product description"),
+        }),
+      ),
+    });
+
+    const outputSchema = z.array(
+      z
+        .object({
+          query: z.string().describe("Original search query"),
+          results: z.array(
+            z.object({
+              name: z.string(),
+              price: z.number(),
+              description: z.string(),
+            }),
+          ),
+        })
+        .describe("Product search results in Russian language"),
+    );
+
+    type Input = z.infer<typeof inputSchema>;
+    type ToolInput = z.infer<typeof toolInputSchema>;
+    type OutputFunction = z.infer<typeof outputSchema>;
+
+    class ProductSearchTool extends Tool {
+      public name = "ProductSearch";
+      public description = "Search products in database";
+      public inputSchema = toolInputSchema;
+      public outputSchema = outputToolSchema;
+
+      private attemptCount = 0;
+      private irrelevantProducts = Array.from({ length: 16 }, (_, i) => ({
+        name: `Товар ${i + 1}`,
+        price: Math.floor(Math.random() * 100) + 10,
+        description: "Нерелевантный товар",
+      }));
+
+      private relevantProducts = [
+        {
+          name: "Красные кроссовки Nike",
+          price: 149.99,
+          description: "Красные кроссовки с амортизацией",
+        },
+        {
+          name: "Красные кроссовки Adidas",
+          price: 129.99,
+          description: "Легкие красные кроссовки для бега",
+        },
+        {
+          name: "Кеды красные Puma",
+          price: 99.99,
+          description: "Модные красные кеды",
+        },
+        {
+          name: "Кроссовки Reebok синие",
+          price: 109.99,
+          description: "Клёвые кроссовки с поддержкой стопы",
+        },
+      ];
+
+      public execute = async (input: ToolInput) => {
+        this.attemptCount++;
+
+        if (this.attemptCount <= 4) {
+          // Возвращаем случайные 3 нерелевантных товара
+          const shuffled = this.irrelevantProducts.sort(
+            () => 0.5 - Math.random(),
+          );
+          return { products: shuffled.slice(0, 3) };
+        }
+
+        // С 5-й попытки возвращаем релевантные товары
+        return { products: this.relevantProducts };
+      };
+    }
+
+    class ProductSearch extends StatelessFunction {
+      public llm = llm;
+      public name = "ProductSearch";
+      public description = "Search products by query with retry";
+      public inputSchema = inputSchema;
+      public outputSchema = outputSchema;
+
+      public promptTemplate: PromptTemplate = new PromptTemplate(
+        `Найди товары по запросу: "{{query}}". 
+      Если не найдено, попробуй расширить поиск.
+      Сделай как минимум 10 попыток.
+      Нужно максимально точно находить нужные товары.
+      Выведи результаты с названием, ценой и описанием на русском`,
+      );
+
+      public tools = [new ProductSearchTool()];
+    }
+
+    const productSearch = new ProductSearch();
+    const executor = new Executor();
+    executor.addFunction(productSearch);
+
+    const finalResult = await executor.smartExecute<Input, OutputFunction>(
+      productSearch.name,
+      { query: "синие кроссовки" },
+    );
+
+    console.log(JSON.stringify(finalResult, null, 2));
+  });
 });
