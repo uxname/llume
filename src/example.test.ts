@@ -238,25 +238,6 @@ describe("example", () => {
         });
       }
 
-      // These are kept for backward compatibility example
-      async preRunMiddleware(input: Input) {
-        await super.preRunMiddleware(input);
-        console.log(
-          pc.blue(
-            "(Pre run middleware legacy): " + JSON.stringify(input, null, 2),
-          ),
-        );
-      }
-
-      async postRunMiddleware(output: OutputFunction) {
-        await super.postRunMiddleware(output);
-        console.log(
-          pc.green(
-            "(Post run middleware legacy): " + JSON.stringify(output, null, 2),
-          ),
-        );
-      }
-
       public promptTemplate: PromptTemplate = new PromptTemplate(
         `Найди товары по запросу: "{{query}}". 
       Товары должны быть по запросу "синие кроссовки".
@@ -268,8 +249,6 @@ describe("example", () => {
       public tools = [new ProductSearchTool()];
     }
 
-    // Create a middleware events collector array
-    // Array to collect middleware events
     const events: MiddlewareEvent[] = [];
 
     const productSearch = new ProductSearch();
@@ -278,6 +257,7 @@ describe("example", () => {
 
     // Add an additional middleware to capture events
     productSearch.addMiddleware(async (event) => {
+      console.log("[MIDDLEWARE]", JSON.stringify(event, null, 2));
       events.push(event);
     });
 
