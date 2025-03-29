@@ -4,13 +4,13 @@ import { AiFunction } from "./core/ai-function.ts";
 import { z } from "zod";
 import { PromptTemplate } from "./core/prompt-template.ts";
 import { Tool } from "./core/tool.ts";
-import { Ai0 } from "./core/llms/ai0.ts";
+import { Ai0Llm } from "./core/llm-providers/ai0-llm.ts";
 import pc from "picocolors";
 import type { MiddlewareEvent } from "./core/prompt/schemas.ts";
 
 describe("example", () => {
   test("should calculate", async () => {
-    const llm = new Ai0(process.env.AI0_URL!, process.env.AI0_API_KEY!);
+    const llm = new Ai0Llm(process.env.AI0_URL!, process.env.AI0_API_KEY!);
 
     const inputSchema = z.object({
       expression: z.string(),
@@ -55,7 +55,7 @@ describe("example", () => {
   });
 
   test("should tell weather", async () => {
-    const llm = new Ai0(process.env.AI0_URL!, process.env.AI0_API_KEY!);
+    const llm = new Ai0Llm(process.env.AI0_URL!, process.env.AI0_API_KEY!);
 
     const inputSchema = z.object({
       cities: z.string(),
@@ -128,7 +128,7 @@ describe("example", () => {
   });
 
   test("should capture tool and llm events with middleware", async () => {
-    const llm = new Ai0(process.env.AI0_URL!, process.env.AI0_API_KEY!);
+    const llm = new Ai0Llm(process.env.AI0_URL!, process.env.AI0_API_KEY!);
 
     const inputSchema = z.object({
       query: z.string().describe("Search query for products"),

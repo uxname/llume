@@ -1,6 +1,7 @@
 import axios from "axios";
 import { LLM } from "../llm.ts";
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import pc from "picocolors";
 
 export interface Ai0RequestParams {
@@ -9,7 +10,7 @@ export interface Ai0RequestParams {
   randomProvider?: boolean;
 }
 
-export class Ai0 extends LLM {
+export class Ai0Llm extends LLM {
   public readonly name = "AI0";
 
   private readonly baseUrl: string;
