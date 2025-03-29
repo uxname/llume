@@ -1,5 +1,4 @@
 import { EXECUTE_AI_FUNCTION_TEMPLATE } from "./templates/execute-function-prompt.ts";
-import { History } from "../history.ts";
 import { z } from "zod";
 import type { AiFunction, FunctionVariables } from "../ai-function.ts";
 import { zodToJsonSchema } from "zod-to-json-schema";

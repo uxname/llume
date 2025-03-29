@@ -5,8 +5,10 @@ import { z } from "zod";
 import { PromptTemplate } from "./core/prompt-template.ts";
 import { Tool } from "./core/tool.ts";
 import { Ai0Llm } from "./core/llm-providers/ai0-llm.ts";
-import pc from "picocolors";
+import pc from "picocolors"; // Import Formatter type
 import type { MiddlewareEvent } from "./core/prompt/schemas.ts";
+import { EventType } from "./core/prompt/schemas.ts";
+import type { Formatter } from "picocolors/types"; // Import EventType
 
 describe("example", () => {
   test("should calculate", async () => {
@@ -221,14 +223,17 @@ describe("example", () => {
 
         // Add a middleware that logs all events
         this.addMiddleware(async (event) => {
-          const eventTypeColors = {
-            llm_request: pc.blue,
-            llm_response: pc.green,
-            tool_request: pc.yellow,
-            tool_response: pc.magenta,
+          // Explicitly type the eventTypeColors map
+          const eventTypeColors: Record<EventType, Formatter> = {
+            [EventType.LLM_REQUEST]: pc.blue,
+            [EventType.LLM_RESPONSE]: pc.green,
+            [EventType.TOOL_REQUEST]: pc.yellow,
+            [EventType.TOOL_RESPONSE]: pc.magenta,
+            [EventType.STATE_UPDATE]: pc.cyan, // Added color for state update
           };
 
-          const colorFn = eventTypeColors[event.type] || pc.white;
+          // Use the typed map, defaulting to white if somehow the type isn't found (shouldn't happen)
+          const colorFn = eventTypeColors[event.type] ?? pc.white;
           console.log(
             colorFn(
               `[${event.type}] ${event.functionName || ""} ${event.toolName || ""}: ` +
@@ -239,7 +244,7 @@ describe("example", () => {
       }
 
       public promptTemplate: PromptTemplate = new PromptTemplate(
-        `Найди товары по запросу: "{{query}}". 
+        `Найди товары по запросу: "{{query}}".
       Товары должны быть по запросу "синие кроссовки".
       Нужны синие кроссовки, а не другого цвета.
       Используй инструмент ProductSearch для поиска товаров.
@@ -277,13 +282,148 @@ describe("example", () => {
 
     // Verify we received the expected events
     expect(events.length).toBeGreaterThan(0);
-    expect(events.some((e) => e.type === "llm_request")).toBe(true);
-    expect(events.some((e) => e.type === "llm_response")).toBe(true);
-    expect(events.some((e) => e.type === "tool_request")).toBe(true);
-    expect(events.some((e) => e.type === "tool_response")).toBe(true);
+    expect(events.some((e) => e.type === EventType.LLM_REQUEST)).toBe(true);
+    expect(events.some((e) => e.type === EventType.LLM_RESPONSE)).toBe(true);
+    expect(events.some((e) => e.type === EventType.TOOL_REQUEST)).toBe(true);
+    expect(events.some((e) => e.type === EventType.TOOL_RESPONSE)).toBe(true);
 
     // Expect the result to be returned successfully
     expect(finalResult).toBeDefined();
     expect(Array.isArray(finalResult)).toBe(true);
+  });
+
+  test("should modify state via middleware after tool execution", async () => {
+    const llm = new Ai0Llm(process.env.AI0_URL!, process.env.AI0_API_KEY!);
+
+    const stateToolInputSchema = z.object({
+      value: z.string().describe("Value to set in state"),
+    });
+    const stateToolOutputSchema = z.object({
+      status: z.literal("success").describe("Indicates the tool ran"),
+    });
+    type StateToolInput = z.infer<typeof stateToolInputSchema>;
+
+    class StateTriggerTool extends Tool<
+      StateToolInput,
+      z.infer<typeof stateToolOutputSchema>
+    > {
+      public name = "StateTrigger";
+      public description = "Triggers a state update via middleware.";
+      public inputSchema = stateToolInputSchema;
+      public outputSchema = stateToolOutputSchema;
+
+      constructor() {
+        super();
+        // Add middleware to the tool itself
+        this.addMiddleware(async (event: MiddlewareEvent) => {
+          if (
+            event.type === EventType.TOOL_RESPONSE &&
+            event.toolName === this.name
+          ) {
+            console.log(
+              pc.cyan(
+                `[TOOL MIDDLEWARE] Tool ${this.name} responded. Updating state.`,
+              ),
+            );
+            // Access executionContext from the event
+            event.executionContext.updateState({
+              triggeredByTool: true,
+              toolInputValue: (event.input as StateToolInput)?.value,
+            });
+          }
+        });
+      }
+
+      protected async executeImpl(
+        input: StateToolInput,
+      ): Promise<z.infer<typeof stateToolOutputSchema>> {
+        console.log(
+          pc.yellow(
+            `[TOOL EXECUTE] Running ${this.name} with input: ${input.value}`,
+          ),
+        );
+        // Simulate work
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        return { status: "success" };
+      }
+    }
+
+    const functionInputSchema = z.object({
+      targetValue: z.string(),
+    });
+    const functionOutputSchema = z.object({
+      message: z.string(),
+      stateValue: z.any().optional(), // Include state value in final output for verification
+    });
+    type FunctionInput = z.infer<typeof functionInputSchema>;
+    type FunctionOutput = z.infer<typeof functionOutputSchema>;
+
+    class StateChangerFunction extends AiFunction<
+      FunctionInput,
+      FunctionOutput
+    > {
+      public llm = llm;
+      public name = "StateChanger";
+      public description = "Calls a tool to trigger a state change.";
+      public inputSchema = functionInputSchema;
+      public outputSchema = functionOutputSchema;
+      public promptTemplate: PromptTemplate = new PromptTemplate(
+        `Call the StateTrigger tool with the value "{{targetValue}}". Then, report success and include the current 'toolInputValue' from the state.`,
+      );
+      public tools = [new StateTriggerTool()];
+
+      constructor() {
+        super();
+        // Add middleware to the function to log state changes
+        this.addMiddleware(async (event: MiddlewareEvent) => {
+          if (
+            event.type === EventType.LLM_RESPONSE &&
+            (event.output as { _type: string })?._type === "success"
+          ) {
+            // Inject current state value into the final success message if needed
+            // Note: This modifies the output *after* the LLM generated it based on history.
+            // A better approach might be for the LLM to explicitly ask for state.
+            const currentState = event.executionContext.state;
+            console.log(
+              pc.magenta(
+                `[FUNCTION MIDDLEWARE] LLM success response. Current state: ${JSON.stringify(currentState)}`,
+              ),
+            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if ((event.output as any)?._data) {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (event.output as any)._data.stateValue =
+                currentState.toolInputValue;
+            }
+          }
+        });
+      }
+    }
+
+    const stateChanger = new StateChangerFunction();
+    const executor = new Executor();
+    executor.addFunction(stateChanger);
+
+    expect(executor.state).toEqual({}); // Initial state is empty
+
+    const finalResult = await executor.smartExecute<
+      FunctionInput,
+      FunctionOutput
+    >(stateChanger.name, { targetValue: "exampleStateValue123" });
+
+    console.log("Final Result:", JSON.stringify(finalResult, null, 2));
+    console.log("Final State:", JSON.stringify(executor.state, null, 2));
+
+    // Assert that the middleware modified the state
+    expect(executor.state).toHaveProperty("triggeredByTool", true);
+    expect(executor.state).toHaveProperty(
+      "toolInputValue",
+      "exampleStateValue123",
+    );
+
+    // Assert that the final result reflects the state change (as modified by function middleware)
+    expect(finalResult).toBeDefined();
+    expect(finalResult.message).toBeDefined();
+    expect(finalResult.stateValue).toEqual("exampleStateValue123");
   });
 });
