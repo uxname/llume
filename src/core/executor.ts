@@ -274,13 +274,14 @@ export class Executor extends ExecutionContext {
           }
           break; // Выходим из switch, цикл while продолжится
 
-        default:
+        default: {
           // Неизвестный тип ответа от LLM
           const unknownType = (result as any)?._type;
           console.error(
             `[smartExecute] Received unknown result type from LLM: ${unknownType}`,
           );
           throw new Error(`Unknown LLM result type: ${unknownType}`);
+        }
       }
     } // конец while
 

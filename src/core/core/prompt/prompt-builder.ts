@@ -1,4 +1,4 @@
-import { EXECUTE_FUNCTION_PROMPT_TEMPLATE } from "./prompts/execute-function.ts";
+import { EXECUTE_FUNCTION_PROMPT_TEMPLATE } from "./templates/execute-function.ts";
 import { History } from "../history.ts";
 import { z } from "zod";
 import type { StatelessFunction, Variables } from "../stateless-function.ts";
