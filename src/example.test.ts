@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest";
 import { Executor } from "./core/executor.ts";
-import { StatelessFunction } from "./core/core/stateless-function.ts";
+import { StatelessFunction } from "./core/stateless-function.ts";
 import { z } from "zod";
-import { PromptTemplate } from "./core/core/prompt-template.ts";
-import { Tool } from "./core/core/tool.ts";
+import { PromptTemplate } from "./core/prompt-template.ts";
+import { Tool } from "./core/tool.ts";
 import { Ai0 } from "./core/llms/ai0.ts";
 import pc from "picocolors";
-import type { MiddlewareEvent } from "./core/core/prompt/schemas.ts";
+import type { MiddlewareEvent } from "./core/prompt/schemas.ts";
 
 describe("example", () => {
   test("should calculate", async () => {

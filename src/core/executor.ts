@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ExecutionContext } from "./execution-context.ts";
-import type { Variables } from "./core/stateless-function.ts";
-import { PromptBuilder } from "./core/prompt/prompt-builder.ts";
+import type { Variables } from "./stateless-function.ts";
+import { PromptBuilder } from "./prompt/prompt-builder.ts";
 import type {
   BaseSuccessType,
   CallToolType,
   ErrorType,
   LLMResult,
-} from "./core/prompt/schemas.ts";
-import type { Message } from "./core/history.ts"; // Импортируем Message
+} from "./prompt/schemas.ts";
+import type { Message } from "./history.ts"; // Импортируем Message
 
 export class Executor extends ExecutionContext {
   // Конструктор наследуется от ExecutionContext, включая historyLimit

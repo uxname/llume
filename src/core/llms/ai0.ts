@@ -1,5 +1,5 @@
 import axios from "axios";
-import { LLM } from "../core/llm.ts";
+import { LLM } from "../llm.ts";
 
 import pc from "picocolors";
 

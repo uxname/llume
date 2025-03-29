@@ -1,5 +1,5 @@
-import type { StatelessFunction } from "./core/stateless-function.ts";
-import { History, type Message } from "./core/history.ts";
+import type { StatelessFunction } from "./stateless-function.ts";
+import { History, type Message } from "./history.ts";
 
 export class ExecutionContext {
   public llmHistory = new History();
