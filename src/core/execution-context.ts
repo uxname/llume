@@ -1,11 +1,11 @@
-import type { StatelessFunction } from "./stateless-function.ts";
+import type { AiFunction } from "./ai-function.ts";
 import { History, type Message } from "./history.ts";
 
 export class ExecutionContext {
   public llmHistory = new History();
   public readonly historyLimit: number; // Делаем его публичным readonly
 
-  protected functions: Map<string, StatelessFunction> = new Map();
+  protected functions: Map<string, AiFunction> = new Map();
 
   /**
    * @param historyLimit Максимальное количество сообщений (включая первое),
@@ -21,8 +21,8 @@ export class ExecutionContext {
     }
   }
 
-  addFunction(aiStatelessFunction: StatelessFunction): void {
-    this.functions.set(aiStatelessFunction.name, aiStatelessFunction);
+  addFunction(aiFunction: AiFunction): void {
+    this.functions.set(aiFunction.name, aiFunction);
   }
 
   addHistoryMessage(message: Message): void {

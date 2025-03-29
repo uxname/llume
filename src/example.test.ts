@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { Executor } from "./core/executor.ts";
-import { StatelessFunction } from "./core/stateless-function.ts";
+import { AiFunction } from "./core/ai-function.ts";
 import { z } from "zod";
 import { PromptTemplate } from "./core/prompt-template.ts";
 import { Tool } from "./core/tool.ts";
@@ -22,7 +22,7 @@ describe("example", () => {
     type Input = z.infer<typeof inputSchema>;
     type Output = z.infer<typeof outputSchema>;
 
-    class Calculator extends StatelessFunction {
+    class Calculator extends AiFunction {
       public llm = llm;
       public name = "Calculator";
       public description = "True calculator that calculates any expressions";
@@ -98,7 +98,7 @@ describe("example", () => {
       };
     }
 
-    class Weather extends StatelessFunction {
+    class Weather extends AiFunction {
       public llm = llm;
       public name = "Weather";
       public description = "Tell weather for city";
@@ -209,7 +209,7 @@ describe("example", () => {
       };
     }
 
-    class ProductSearch extends StatelessFunction {
+    class ProductSearch extends AiFunction {
       public llm = llm;
       public name = "ProductSearch";
       public description = "Search products by query with retry";

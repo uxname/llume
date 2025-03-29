@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ExecutionContext } from "./execution-context.ts";
-import type { Variables } from "./stateless-function.ts";
+import type { Variables } from "./ai-function.ts";
 import { PromptBuilder } from "./prompt/prompt-builder.ts";
 import type {
   BaseSuccessType,

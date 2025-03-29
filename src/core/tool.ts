@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Variables, MiddlewareFunction } from "./stateless-function.ts";
+import type { Variables, MiddlewareFunction } from "./ai-function.ts";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { EventType } from "./prompt/schemas.ts";
 import type { MiddlewareEvent } from "./prompt/schemas.ts";

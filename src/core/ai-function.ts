@@ -10,7 +10,7 @@ export type Variables = Record<string, any>;
 
 export type MiddlewareFunction = (event: MiddlewareEvent) => Promise<void>;
 
-export abstract class StatelessFunction<
+export abstract class AiFunction<
   TInput extends Variables = Variables,
   TOutput extends Variables = Variables,
 > {
@@ -25,7 +25,7 @@ export abstract class StatelessFunction<
   public abstract promptTemplate: PromptTemplate;
 
   public tools?: Tool[];
-  public aiStatelessFunctions?: StatelessFunction[];
+  public aiFunctions?: AiFunction[];
 
   private middlewares: MiddlewareFunction[] = [];
 
