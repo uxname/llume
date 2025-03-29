@@ -1,5 +1,5 @@
 import type { AiFunction } from "./ai-function.ts";
-import { History, type Message } from "./history.ts";
+import { History, type HistoryMessage } from "./history.ts";
 
 export class ExecutionContext {
   public llmHistory = new History();
@@ -25,7 +25,7 @@ export class ExecutionContext {
     this.functions.set(aiFunction.name, aiFunction);
   }
 
-  addHistoryMessage(message: Message): void {
+  addHistoryMessage(message: HistoryMessage): void {
     this.llmHistory.addMessage(message);
   }
 }

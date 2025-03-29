@@ -4,7 +4,7 @@ import { LLM } from "../llm.ts";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import pc from "picocolors";
 
-export interface Ai0RequestParams {
+export interface Ai0LlmRequestParams {
   prompt: string;
   provider?: string;
   randomProvider?: boolean;
@@ -22,7 +22,7 @@ export class Ai0Llm extends LLM {
     this.apiKey = apiKey;
   }
 
-  private async generateResponse(params: Ai0RequestParams): Promise<string> {
+  private async generateResponse(params: Ai0LlmRequestParams): Promise<string> {
     const { prompt, provider = "gemini", randomProvider = false } = params;
 
     try {
@@ -50,7 +50,7 @@ export class Ai0Llm extends LLM {
   }
 
   public async execute(prompt: string): Promise<string> {
-    const params: Ai0RequestParams = { prompt };
+    const params: Ai0LlmRequestParams = { prompt };
     const response = await this.generateResponse(params);
 
     // console.log(pc.blue(prompt));

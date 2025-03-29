@@ -1,25 +1,25 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ExecutionContext } from "./execution-context.ts";
-import type { Variables } from "./ai-function.ts";
+import type { FunctionVariables } from "./ai-function.ts";
 import { PromptBuilder } from "./prompt/prompt-builder.ts";
 import type {
-  BaseSuccessType,
-  CallToolType,
-  ErrorType,
-  LLMResult,
+  SuccessPayload,
+  ToolCallPayload,
+  ErrorPayload,
+  LlmResponse,
 } from "./prompt/schemas.ts";
-import type { Message } from "./history.ts"; // Импортируем Message
+import type { HistoryMessage } from "./history.ts"; // Импортируем Message
 
 export class Executor extends ExecutionContext {
   // Конструктор наследуется от ExecutionContext, включая historyLimit
 
   async executeSingleFunction<
-    TInput extends Variables,
-    TOutput extends Variables,
+    TInput extends FunctionVariables,
+    TOutput extends FunctionVariables,
   >(
     functionName: string,
     input: TInput, // Входные данные для *текущего* вызова
-  ): Promise<LLMResult<unknown | TOutput>> {
+  ): Promise<LlmResponse<unknown | TOutput>> {
     // Тип TOutput здесь может быть не совсем точным, т.к. LLM может вернуть и Error/CallTool
     const aiFunction = this.functions.get(functionName);
     if (!aiFunction) {
@@ -58,7 +58,7 @@ export class Executor extends ExecutionContext {
         return { _type: "error", _message: "LLM response is not valid JSON." };
       }
       const jsonString = jsonMatch[1] || jsonMatch[2]; // Берем или из блока ```json или просто {.*}
-      return JSON.parse(jsonString) as LLMResult<TOutput>; // Парсим извлеченную строку
+      return JSON.parse(jsonString) as LlmResponse<TOutput>; // Парсим извлеченную строку
     } catch (error) {
       console.error("Failed to parse LLM response:", response, error);
       return {
@@ -68,7 +68,10 @@ export class Executor extends ExecutionContext {
     }
   }
 
-  async callTool<TInput extends Variables, TOutput extends Variables>(
+  async callTool<
+    TInput extends FunctionVariables,
+    TOutput extends FunctionVariables,
+  >(
     functionName: string, // Нужен для поиска нужного тула
     toolName: string,
     input: TInput,
@@ -144,7 +147,10 @@ export class Executor extends ExecutionContext {
   }
 
   // --- Итеративная версия smartExecute ---
-  async smartExecute<TInput extends Variables, TOutput extends Variables>(
+  async smartExecute<
+    TInput extends FunctionVariables,
+    TOutput extends FunctionVariables,
+  >(
     functionName: string,
     initialInput: TInput, // Переименуем для ясности
     maxIterations: number = 5, // Добавим лимит итераций для предотвращения бесконечных циклов
@@ -186,7 +192,7 @@ export class Executor extends ExecutionContext {
       // console.log(`--- Smart Execute Iteration: ${iteration} ---`);
 
       // Выполняем один шаг LLM
-      const result: LLMResult<TOutput | unknown> =
+      const result: LlmResponse<TOutput | unknown> =
         await this.executeSingleFunction(
           functionName,
           currentInput, // Передаем текущий ввод (может быть полезно если LLM модифицирует его)

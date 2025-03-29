@@ -6,13 +6,13 @@ import { EventType } from "./prompt/schemas.ts";
 import type { MiddlewareEvent } from "./prompt/schemas.ts";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Variables = Record<string, any>;
+export type FunctionVariables = Record<string, any>;
 
 export type MiddlewareFunction = (event: MiddlewareEvent) => Promise<void>;
 
 export abstract class AiFunction<
-  TInput extends Variables = Variables,
-  TOutput extends Variables = Variables,
+  TInput extends FunctionVariables = FunctionVariables,
+  TOutput extends FunctionVariables = FunctionVariables,
 > {
   public abstract llm: LLM;
 

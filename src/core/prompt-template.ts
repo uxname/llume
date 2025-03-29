@@ -1,4 +1,4 @@
-import type { Variables } from "./ai-function.ts";
+import type { FunctionVariables } from "./ai-function.ts";
 
 export class PromptTemplate {
   constructor(public readonly template: string) {}
@@ -25,7 +25,7 @@ export class PromptTemplate {
    * Renders the template by replacing placeholders with their corresponding values.
    * Throws an error if any required variables are missing.
    */
-  public render<T extends Variables>(variables: T): string {
+  public render<T extends FunctionVariables>(variables: T): string {
     const missingVariables = this.validate(variables);
     if (missingVariables.length > 0) {
       throw new Error(
@@ -52,7 +52,7 @@ export class PromptTemplate {
    * Validates the provided variables against the template's required variables.
    * Returns a list of missing variables.
    */
-  public validate(variables: Partial<Variables>): string[] {
+  public validate(variables: Partial<FunctionVariables>): string[] {
     const missingVariables: string[] = [];
 
     for (const varName of this.getVariables()) {

@@ -18,16 +18,16 @@ export const ErrorSchema = z.object({
   _message: z.string(),
 });
 
-export type BaseSuccessType = z.infer<typeof BaseSuccessSchema>;
+export type SuccessPayload = z.infer<typeof BaseSuccessSchema>;
 
-export type ErrorType = z.infer<typeof ErrorSchema>;
+export type ErrorPayload = z.infer<typeof ErrorSchema>;
 
-export type CallToolType = z.infer<typeof CallToolSchema>;
+export type ToolCallPayload = z.infer<typeof CallToolSchema>;
 
-export type LLMResult<T> =
+export type LlmResponse<T> =
   | { _type: "success"; _data: T }
-  | ErrorType
-  | CallToolType;
+  | ErrorPayload
+  | ToolCallPayload;
 
 export enum EventType {
   LLM_REQUEST = "llm_request",

@@ -1,7 +1,7 @@
 import { EXECUTE_FUNCTION_PROMPT_TEMPLATE } from "./templates/execute-function-prompt.ts";
 import { History } from "../history.ts";
 import { z } from "zod";
-import type { AiFunction, Variables } from "../ai-function.ts";
+import type { AiFunction, FunctionVariables } from "../ai-function.ts";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type { Tool } from "../tool.ts";
 import { BaseSuccessSchema, CallToolSchema, ErrorSchema } from "./schemas.ts";
@@ -37,7 +37,7 @@ export class PromptBuilder {
   public static buildExecuteFunctionPrompt(
     history: History,
     aiFunction: AiFunction,
-    variables: Variables,
+    variables: FunctionVariables,
     tools: Tool[],
     historyLimit: number,
   ): string {

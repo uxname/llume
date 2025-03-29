@@ -1,12 +1,12 @@
 import { z } from "zod";
-import type { Variables, MiddlewareFunction } from "./ai-function.ts";
+import type { FunctionVariables, MiddlewareFunction } from "./ai-function.ts";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { EventType } from "./prompt/schemas.ts";
 import type { MiddlewareEvent } from "./prompt/schemas.ts";
 
 export abstract class Tool<
-  TInput extends Variables = Variables,
-  TOutput extends Variables = Variables,
+  TInput extends FunctionVariables = FunctionVariables,
+  TOutput extends FunctionVariables = FunctionVariables,
 > {
   public abstract name: string;
   public abstract description: string;

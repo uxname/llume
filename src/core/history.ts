@@ -1,9 +1,9 @@
-import type { Variables } from "./ai-function.ts";
+import type { FunctionVariables } from "./ai-function.ts";
 
 export class History {
-  public messages: Message[] = [];
+  public messages: HistoryMessage[] = [];
 
-  addMessage(message: Message): void {
+  addMessage(message: HistoryMessage): void {
     this.messages.push(message);
   }
 
@@ -15,7 +15,7 @@ export class History {
    *                Минимальное значение limit - 2 (первое и последнее).
    * @returns Массив сообщений, готовый к передаче в LLM.
    */
-  getLimitedMessages(limit: number): Message[] {
+  getLimitedMessages(limit: number): HistoryMessage[] {
     const actualLimit = Math.max(limit, 2); // Гарантируем хотя бы первое и последнее, если возможно
 
     if (this.messages.length <= actualLimit) {
@@ -71,13 +71,13 @@ export class History {
 }
 
 // Интерфейсы Message и ToolResponseMessage остаются без изменений
-export interface ToolResponseMessage {
+export interface ToolResponsePayload {
   toolName: string;
-  toolResponse: Variables;
+  toolResponse: FunctionVariables;
 }
 
-export type Message = {
+export type HistoryMessage = {
   role: "user" | "assistant";
-  content?: Variables | string | undefined; // Убедимся, что content может быть Variables (JSON)
-  toolResponse?: ToolResponseMessage | undefined;
+  content?: FunctionVariables | string | undefined; // Убедимся, что content может быть Variables (JSON)
+  toolResponse?: ToolResponsePayload | undefined;
 };
