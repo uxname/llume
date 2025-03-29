@@ -214,8 +214,12 @@ describe("example", () => {
       public inputSchema = inputSchema;
       public outputSchema = outputSchema;
 
+      async preRunMiddleware(input: Input) {
+        console.log("(Pre run middleware)", JSON.stringify(input, null, 2));
+      }
+
       async postRunMiddleware(output: OutputFunction) {
-        console.log("RESULT HOOKED |", JSON.stringify(output, null, 2));
+        console.log("(Post run middleware)", JSON.stringify(output, null, 2));
       }
 
       public promptTemplate: PromptTemplate = new PromptTemplate(

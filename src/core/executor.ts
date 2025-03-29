@@ -81,12 +81,13 @@ export class Executor extends ExecutionContext {
       content: result,
     });
 
+    await aiFunction.postRunMiddleware(result);
+
     if (result._type === "error") {
       throw new Error(result._message);
     }
 
     if (result._type === "success") {
-      await aiFunction.postRunMiddleware(result);
       return result._data as TOutput;
     }
 
