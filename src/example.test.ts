@@ -214,6 +214,10 @@ describe("example", () => {
       public inputSchema = inputSchema;
       public outputSchema = outputSchema;
 
+      async postRunMiddleware(output: OutputFunction) {
+        console.log("RESULT HOOKED |", JSON.stringify(output, null, 2));
+      }
+
       public promptTemplate: PromptTemplate = new PromptTemplate(
         `Найди товары по запросу: "{{query}}". 
       Если не найдено, попробуй расширить поиск.

@@ -63,6 +63,8 @@ export class Executor extends ExecutionContext {
       throw new Error(`Function ${functionName} not found`);
     }
 
+    await aiFunction.preRunMiddleware(input);
+
     const isFirstRun = this.llmHistory.messages.length === 0;
 
     if (isFirstRun) {
@@ -84,6 +86,7 @@ export class Executor extends ExecutionContext {
     }
 
     if (result._type === "success") {
+      await aiFunction.postRunMiddleware(result);
       return result._data as TOutput;
     }
 

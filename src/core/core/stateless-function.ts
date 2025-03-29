@@ -23,6 +23,10 @@ export abstract class StatelessFunction<
   public tools?: Tool[];
   public aiStatelessFunctions?: StatelessFunction[];
 
-  public preRunMiddleware?: (input: TInput) => Promise<TInput>;
-  public postRunMiddleware?: (output: TOutput) => Promise<TOutput>;
+  public preRunMiddleware(input: TInput): Promise<void> {
+    return Promise.resolve();
+  }
+  public postRunMiddleware(output: TOutput): Promise<void> {
+    return Promise.resolve();
+  }
 }
