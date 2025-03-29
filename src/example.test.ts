@@ -6,6 +6,7 @@ import { PromptTemplate } from "./core/core/prompt-template.ts";
 import { Tool } from "./core/core/tool.ts";
 import { Ai0 } from "./core/llms/ai0.ts";
 import pc from "picocolors";
+import type { MiddlewareEvent } from "./core/core/prompt/schemas.ts";
 
 describe("example", () => {
   test("should calculate", async () => {
@@ -28,11 +29,21 @@ describe("example", () => {
       public inputSchema = inputSchema;
       public outputSchema = outputSchema;
       public promptTemplate: PromptTemplate = new PromptTemplate(
-        `Without tools calculate next expression: {{expression}}`,
+        `Calculate this expression without using any tools: {{expression}}
+        Return JSON with this format:
+        {
+          "_type": "success",
+          "_data": {
+            "result": <calculation_result>
+          }
+        }`,
       );
     }
 
     const calculator = new Calculator();
+    calculator.addMiddleware(async (event): Promise<void> => {
+      console.log("[MIDDLEWARE]", event);
+    });
     const executor = new Executor();
     executor.addFunction(calculator);
 
@@ -78,7 +89,7 @@ describe("example", () => {
       public description = "Tell weather for city";
       public inputSchema = toolInputSchema;
       public outputSchema = outputToolSchema;
-      public execute = async (input: ToolInput) => {
+      protected executeImpl = async (input: ToolInput) => {
         const degree = Math.floor(Math.random() * 10);
         return {
           result: degree,
@@ -116,7 +127,7 @@ describe("example", () => {
     expect(executor).toBeDefined();
   });
 
-  test("should retry product search and find relevant products after 4 attempts", async () => {
+  test("should capture tool and llm events with middleware", async () => {
     const llm = new Ai0(process.env.AI0_URL!, process.env.AI0_API_KEY!);
 
     const inputSchema = z.object({
@@ -167,69 +178,33 @@ describe("example", () => {
       public outputSchema = outputToolSchema;
 
       private attemptCount = 0;
-      private irrelevantProducts = Array.from({ length: 16 }, (_, i) => ({
-        name: `Товар ${i + 1}`,
-        price: Math.floor(Math.random() * 100) + 10,
-        description: "Нерелевантный товар",
-      }));
-
-      private relevantProducts = [
+      private products = [
         {
-          name: "Красные кроссовки Nike",
+          name: "Синие кроссовки Nike",
           price: 149.99,
-          description: "Красные кроссовки с амортизацией",
+          description: "Синие кроссовки с амортизацией",
         },
         {
-          name: "Красные кроссовки Adidas",
+          name: "Синие кроссовки Adidas",
           price: 129.99,
-          description: "Легкие красные кроссовки для бега",
+          description: "Легкие синие кроссовки для бега",
         },
         {
-          name: "Кеды красные Puma",
+          name: "Кроссовки Puma синие",
           price: 99.99,
-          description: "Модные красные кеды",
-        },
-        {
-          name: "Кроссовки Reebok синие",
-          price: 109.99,
-          description: "Клёвые кроссовки с поддержкой стопы",
-        },
-        {
-          name: "Кроссовки Nike Black",
-          price: 129.99,
-          description: "Красные кроссовки с амортизацией",
-        },
-        {
-          name: "Кроссовки Adidas Black",
-          price: 129.99,
-          description: "Красные кроссовки с амортизацией",
-        },
-        {
-          name: "Кроссовки Puma Black",
-          price: 129.99,
-          description: "Красные кроссовки с амортизацией",
-        },
-        {
-          name: "Кроссовки Reebok Black",
-          price: 129.99,
-          description: "Красные кроссовки с амортизацией",
+          description: "Модные синие кроссовки",
         },
       ];
 
-      public execute = async (input: ToolInput) => {
-        this.attemptCount++;
+      protected executeImpl = async (input: ToolInput) => {
+        const { limit = 3, offset = 0 } = input; // query is not used
 
-        const { query, limit = 3, offset = 0 } = input;
-
-        if (this.attemptCount <= 2) {
-          const shuffled = this.irrelevantProducts.sort(
-            () => 0.5 - Math.random(),
-          );
-          return { products: shuffled.slice(offset, offset + limit) };
-        }
-
+        // Capture middleware events but always return successful results
         return {
-          products: this.relevantProducts.slice(offset, offset + limit),
+          products: this.products.slice(
+            offset,
+            Math.min(this.products.length, offset + limit),
+          ),
         };
       };
     }
@@ -241,38 +216,94 @@ describe("example", () => {
       public inputSchema = inputSchema;
       public outputSchema = outputSchema;
 
+      constructor() {
+        super();
+
+        // Add a middleware that logs all events
+        this.addMiddleware(async (event) => {
+          const eventTypeColors = {
+            llm_request: pc.blue,
+            llm_response: pc.green,
+            tool_request: pc.yellow,
+            tool_response: pc.magenta,
+          };
+
+          const colorFn = eventTypeColors[event.type] || pc.white;
+          console.log(
+            colorFn(
+              `[${event.type}] ${event.functionName || ""} ${event.toolName || ""}: ` +
+                JSON.stringify(event.input || event.output, null, 2),
+            ),
+          );
+        });
+      }
+
+      // These are kept for backward compatibility example
       async preRunMiddleware(input: Input) {
+        await super.preRunMiddleware(input);
         console.log(
-          pc.blue("(Pre run middleware): " + JSON.stringify(input, null, 2)),
+          pc.blue(
+            "(Pre run middleware legacy): " + JSON.stringify(input, null, 2),
+          ),
         );
       }
 
       async postRunMiddleware(output: OutputFunction) {
+        await super.postRunMiddleware(output);
         console.log(
-          pc.green("(Post run middleware): " + JSON.stringify(output, null, 2)),
+          pc.green(
+            "(Post run middleware legacy): " + JSON.stringify(output, null, 2),
+          ),
         );
       }
 
       public promptTemplate: PromptTemplate = new PromptTemplate(
         `Найди товары по запросу: "{{query}}". 
-      Если не найдено, попробуй расширить поиск.
-      Сделай как минимум 10 попыток.
-      Нужно максимально точно находить нужные товары.
-      Выведи результаты с названием, ценой и описанием на русском`,
+      Товары должны быть по запросу "синие кроссовки".
+      Нужны синие кроссовки, а не другого цвета.
+      Используй инструмент ProductSearch для поиска товаров.
+      Выведи результаты с названием, ценой и описанием на русском.`,
       );
 
       public tools = [new ProductSearchTool()];
     }
 
+    // Create a middleware events collector array
+    // Array to collect middleware events
+    const events: MiddlewareEvent[] = [];
+
     const productSearch = new ProductSearch();
     const executor = new Executor();
     executor.addFunction(productSearch);
 
+    // Add an additional middleware to capture events
+    productSearch.addMiddleware(async (event) => {
+      events.push(event);
+    });
+
+    // Find the tool instance and add middleware to it as well
+    const tool = productSearch.tools?.[0];
+    if (tool) {
+      tool.addMiddleware(async (event) => {
+        console.log(`Tool middleware event: ${event.type}`);
+        events.push(event);
+      });
+    }
+
     const finalResult = await executor.smartExecute<Input, OutputFunction>(
       productSearch.name,
-      { query: "синие кроссовки", limit: 2, offset: 1 },
+      { query: "синие кроссовки", limit: 2, offset: 0 },
     );
 
-    console.log(JSON.stringify(finalResult, null, 2));
+    // Verify we received the expected events
+    expect(events.length).toBeGreaterThan(0);
+    expect(events.some((e) => e.type === "llm_request")).toBe(true);
+    expect(events.some((e) => e.type === "llm_response")).toBe(true);
+    expect(events.some((e) => e.type === "tool_request")).toBe(true);
+    expect(events.some((e) => e.type === "tool_response")).toBe(true);
+
+    // Expect the result to be returned successfully
+    expect(finalResult).toBeDefined();
+    expect(Array.isArray(finalResult)).toBe(true);
   });
 });

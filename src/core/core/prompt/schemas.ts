@@ -28,3 +28,20 @@ export type LLMResult<T> =
   | { _type: "success"; _data: T }
   | ErrorType
   | CallToolType;
+
+export enum EventType {
+  LLM_REQUEST = "llm_request",
+  LLM_RESPONSE = "llm_response",
+  TOOL_REQUEST = "tool_request",
+  TOOL_RESPONSE = "tool_response",
+}
+
+export interface MiddlewareEvent<TInput = unknown, TOutput = unknown> {
+  type: EventType;
+  initiator: "user" | "llm";
+  functionName?: string;
+  toolName?: string;
+  input?: TInput;
+  output?: TOutput;
+  timestamp: number;
+}

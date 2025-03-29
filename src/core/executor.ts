@@ -49,6 +49,7 @@ export class Executor extends ExecutionContext {
       throw new Error(`Tool ${toolName} not found`);
     }
 
+    // Use the execute method which now handles middlewares internally
     const result = await tool.execute(input);
 
     return result as TOutput;
