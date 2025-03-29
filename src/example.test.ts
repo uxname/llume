@@ -5,6 +5,7 @@ import { z } from "zod";
 import { PromptTemplate } from "./core/core/prompt-template.ts";
 import { Tool } from "./core/core/tool.ts";
 import { Ai0 } from "./core/llms/ai0.ts";
+import pc from "picocolors";
 
 describe("example", () => {
   test("should calculate", async () => {
@@ -215,11 +216,15 @@ describe("example", () => {
       public outputSchema = outputSchema;
 
       async preRunMiddleware(input: Input) {
-        console.log("(Pre run middleware)", JSON.stringify(input, null, 2));
+        console.log(
+          pc.blue("(Pre run middleware): " + JSON.stringify(input, null, 2)),
+        );
       }
 
       async postRunMiddleware(output: OutputFunction) {
-        console.log("(Post run middleware)", JSON.stringify(output, null, 2));
+        console.log(
+          pc.green("(Post run middleware): " + JSON.stringify(output, null, 2)),
+        );
       }
 
       public promptTemplate: PromptTemplate = new PromptTemplate(

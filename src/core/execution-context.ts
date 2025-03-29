@@ -11,21 +11,6 @@ export class ExecutionContext {
   }
 
   addHistoryMessage(message: Message): void {
-    const header = `[${message.role.toUpperCase()}${
-      message.toolResponse?.toolName
-        ? " (" + message.toolResponse.toolName + ")"
-        : ""
-    }]`;
-
-    const content =
-      typeof message.content === "string"
-        ? message.content
-        : JSON.stringify(message.content) ||
-          JSON.stringify(message.toolResponse?.toolResponse);
-
-    const formattedMessage = `${header.padEnd(24)}${content}`;
-
-    console.log(formattedMessage);
     this.llmHistory.addMessage(message);
   }
 }
