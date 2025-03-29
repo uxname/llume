@@ -8,43 +8,32 @@ import type {
   ErrorPayload,
   LlmResponse,
 } from "./prompt/schemas.ts";
-import type { HistoryMessage } from "./history.ts"; // Импортируем Message
+import type { HistoryMessage } from "./history.ts";
 
 export class Executor extends ExecutionContext {
-  // Конструктор наследуется от ExecutionContext, включая historyLimit
-
   async executeSingleFunction<
     TInput extends FunctionVariables,
     TOutput extends FunctionVariables,
   >(
     functionName: string,
-    input: TInput, // Входные данные для *текущего* вызова
+    input: TInput,
   ): Promise<LlmResponse<unknown | TOutput>> {
-    // Тип TOutput здесь может быть не совсем точным, т.к. LLM может вернуть и Error/CallTool
     const aiFunction = this.functions.get(functionName);
     if (!aiFunction) {
       throw new Error(`Function ${functionName} not found`);
     }
 
-    // Строим промпт, используя ограниченную историю и текущий ввод
     const prompt = PromptBuilder.buildExecuteFunctionPrompt(
-      this.executionHistory, // Передаем весь объект History
+      this.executionHistory,
       aiFunction,
-      input, // Передаем текущие переменные для рендеринга {{query}}
+      input,
       aiFunction.tools ?? [],
-      this.historyLimit, // Передаем лимит истории
+      this.historyLimit,
     );
-
-    // Здесь можно добавить логирование самого промпта перед отправкой в LLM
-    // console.log("--- LLM PROMPT ---");
-    // console.log(prompt);
-    // console.log("------------------");
 
     const response = await aiFunction.llm.execute(prompt);
 
-    // Здесь нужна более надежная обработка JSON (как обсуждалось в п.1 улучшений)
     try {
-      // Попытка извлечь JSON из возможного markdown блока
       const jsonMatch = response.match(
         /```json\s*([\s\S]*?)\s*```|({[\s\S]*})/,
       );
@@ -53,12 +42,10 @@ export class Executor extends ExecutionContext {
           "LLM response does not contain a recognizable JSON structure:",
           response,
         );
-        // Можно вернуть стандартную ошибку или попытаться обработать как текст?
-        // Пока вернем ошибку, т.к. ожидаем JSON
         return { _type: "error", _message: "LLM response is not valid JSON." };
       }
-      const jsonString = jsonMatch[1] || jsonMatch[2]; // Берем или из блока ```json или просто {.*}
-      return JSON.parse(jsonString) as LlmResponse<TOutput>; // Парсим извлеченную строку
+      const jsonString = jsonMatch[1] || jsonMatch[2];
+      return JSON.parse(jsonString) as LlmResponse<TOutput>;
     } catch (error) {
       console.error("Failed to parse LLM response:", response, error);
       return {
@@ -71,25 +58,17 @@ export class Executor extends ExecutionContext {
   async callTool<
     TInput extends FunctionVariables,
     TOutput extends FunctionVariables,
-  >(
-    functionName: string, // Нужен для поиска нужного тула
-    toolName: string,
-    input: TInput,
-  ): Promise<TOutput> {
-    // Здесь TOutput - это тип возвращаемый тулом
+  >(functionName: string, toolName: string, input: TInput): Promise<TOutput> {
     const aiFunction = this.functions.get(functionName);
     if (!aiFunction) {
-      // Можно добавить ошибку в историю? Или просто пробросить?
       throw new Error(`[callTool] Function ${functionName} not found`);
     }
 
     const tool = aiFunction.tools?.find((t) => t.name === toolName);
     if (!tool) {
-      // Добавляем сообщение об ошибке в историю, чтобы LLM знал
       this.addHistoryMessage({
-        role: "assistant", // Или "system"? Роль "assistant" кажется логичной, т.к. это ответ на его запрос
+        role: "assistant",
         content: {
-          // Используем content вместо toolResponse, т.к. это не результат, а ошибка
           _type: "error",
           _message: `Tool '${toolName}' requested by the assistant was not found in function '${functionName}'.`,
         },
@@ -100,9 +79,7 @@ export class Executor extends ExecutionContext {
     }
 
     try {
-      // Используем execute тула, который включает middleware
       const result = await tool.execute(input);
-      // Валидация результата тула по его outputSchema? (Опционально, но полезно)
       try {
         tool.outputSchema.parse(result);
       } catch (validationError) {
@@ -110,70 +87,82 @@ export class Executor extends ExecutionContext {
           `[callTool] Tool ${toolName} output validation failed:`,
           validationError,
         );
-        // Как обработать? Отправить ошибку валидации LLM?
-        // Отправляем информацию об ошибке валидации обратно в историю
         this.addHistoryMessage({
-          role: "user", // Представляем это как ответ "системы" или "окружения" на вызов тула
+          role: "user",
           toolResponse: {
             toolName: toolName,
             toolResponse: {
-              // Оборачиваем ошибку
               _type: "tool_execution_error",
               _message: `Tool output validation failed: ${validationError instanceof Error ? validationError.message : String(validationError)}`,
-              _invalidOutput: result, // Посылаем некорректный вывод для контекста
+              _invalidOutput: result,
             },
           },
         });
-        // Можно либо пробросить ошибку, либо вернуть специальный объект ошибки
         throw new Error(`Tool ${toolName} output validation failed.`);
       }
       return result as TOutput;
     } catch (error) {
-      console.error(`[callTool] Error executing tool ${toolName}:`, error);
-      // Отправляем информацию об ошибке выполнения тула обратно в историю
-      this.addHistoryMessage({
-        role: "user", // Представляем это как ответ "системы"
-        toolResponse: {
-          toolName: toolName,
+      // Handle errors thrown either by tool.execute or by the validation block above
+      // But only add history message if it wasn't added by the validation block already
+      if (
+        !(
+          error instanceof Error &&
+          error.message.includes("output validation failed")
+        )
+      ) {
+        console.error(`[callTool] Error executing tool ${toolName}:`, error);
+        this.addHistoryMessage({
+          role: "user",
           toolResponse: {
-            _type: "tool_execution_error",
-            _message: `Error executing tool: ${error instanceof Error ? error.message : String(error)}`,
+            toolName: toolName,
+            toolResponse: {
+              _type: "tool_execution_error",
+              _message: `Error executing tool: ${error instanceof Error ? error.message : String(error)}`,
+            },
           },
-        },
-      });
-      // Пробрасываем ошибку дальше, чтобы smartExecute мог ее поймать
-      throw error; // Важно пробросить, чтобы цикл в smartExecute прервался или обработал ошибку
+        });
+      }
+      throw error;
     }
   }
 
-  // --- Итеративная версия smartExecute ---
   async smartExecute<
     TInput extends FunctionVariables,
     TOutput extends FunctionVariables,
   >(
     functionName: string,
-    initialInput: TInput, // Переименуем для ясности
-    maxIterations: number = 5, // Добавим лимит итераций для предотвращения бесконечных циклов
+    initialInput: TInput,
+    maxIterations: number = 5,
   ): Promise<TOutput> {
     const aiFunction = this.functions.get(functionName);
     if (!aiFunction) {
       throw new Error(`[smartExecute] Function ${functionName} not found`);
     }
 
-    // Middleware вызывается один раз перед началом всего процесса
-    await aiFunction.preRunMiddleware(initialInput);
+    // --- Start: Integrated preRunMiddleware functionality ---
+    // Potential location for actions that needed to happen *before* the first LLM call
+    // e.g., Initial input validation
+    try {
+      aiFunction.inputSchema.parse(initialInput);
+    } catch (validationError) {
+      console.error(
+        "[smartExecute] Initial input validation failed:",
+        validationError,
+      );
+      throw new Error(
+        `Initial input validation failed: ${validationError instanceof Error ? validationError.message : String(validationError)}`,
+      );
+    }
+    // Other pre-run logic could be added here if needed (logging, setup etc.)
+    // --- End: Integrated preRunMiddleware functionality ---
 
-    const currentInput = { ...initialInput }; // Копируем для возможных модификаций (хотя сейчас не используется)
+    const currentInput = { ...initialInput };
     let iteration = 0;
 
-    // Добавляем *начальный* запрос пользователя в историю только один раз
-    // Проверяем, не пустое ли тело у promptTemplate, чтобы не добавлять пустые сообщения
     const initialUserQuery = aiFunction.promptTemplate
       .render<TInput>(initialInput)
       .trim();
     if (initialUserQuery) {
-      // Добавляем только если это первый запуск для этого Executor'а ИЛИ
-      // если последнее сообщение не точно такое же (предотвращение дублей при retry)
       if (
         this.executionHistory.messages.length === 0 ||
         JSON.stringify(
@@ -191,109 +180,88 @@ export class Executor extends ExecutionContext {
 
     while (iteration < maxIterations) {
       iteration++;
-      // console.log(`--- Smart Execute Iteration: ${iteration} ---`);
 
-      // Выполняем один шаг LLM
       const result: LlmResponse<TOutput | unknown> =
-        await this.executeSingleFunction(
-          functionName,
-          currentInput, // Передаем текущий ввод (может быть полезно если LLM модифицирует его)
-        );
+        await this.executeSingleFunction(functionName, currentInput);
 
-      // Добавляем ответ LLM в историю
-      // Мы добавляем *весь* результат (включая _type), чтобы сохранить полный контекст решения LLM
       this.addHistoryMessage({
         role: "assistant",
-        content: result, // Сохраняем весь объект LLMResult
+        content: result,
       });
 
-      // Middleware после ответа LLM
-      // Обратите внимание: TOutput здесь может быть неточным, т.к. result может быть Error/CallTool
-      // Возможно, стоит типизировать postRunMiddleware более общим типом <unknown> или <LLMResult<any>>
-      await aiFunction.postRunMiddleware(result as any); // Используем as any временно
+      // --- Start: Integrated postRunMiddleware functionality ---
+      // Potential location for actions needed *after* each LLM call but *before* processing
+      // e.g., Logging the raw LLM response
+      // console.log("Raw LLM Response:", result);
+      // Other post-run logic could be added here (e.g. generic checks on 'result')
+      // --- End: Integrated postRunMiddleware functionality ---
 
-      // Обрабатываем результат LLM
       switch (result._type) {
         case "success":
-          // Валидация ответа LLM по схеме функции? (Опционально, но полезно)
           try {
             aiFunction.outputSchema.parse(result._data);
-            return result._data as TOutput; // Успех, возвращаем данные
+            return result._data as TOutput;
           } catch (validationError) {
             console.error(
               `[smartExecute] LLM output validation failed:`,
               validationError,
             );
-            // Добавляем ошибку валидации в историю, чтобы LLM мог исправиться?
             this.addHistoryMessage({
-              role: "user", // Сообщение от "системы"
+              role: "user",
               content: {
                 _type: "error",
                 _message: `Assistant response validation failed: ${validationError instanceof Error ? validationError.message : String(validationError)}. The invalid data was: ${JSON.stringify(result._data)}`,
               },
             });
-            // Продолжаем цикл? Или выбрасываем ошибку?
-            // Пока продолжим, дадим LLM шанс исправиться на следующей итерации
-            // Но если это последняя итерация, нужно выкинуть ошибку
             if (iteration === maxIterations) {
               throw new Error(
                 `LLM output validation failed after ${maxIterations} iterations.`,
               );
             }
-            // Ничего не возвращаем, цикл продолжится
           }
-          break; // Выходим из switch, но не из while (в случае ошибки валидации)
+          break;
 
         case "error":
-          // LLM сам вернул ошибку
           console.error(
             `[smartExecute] LLM returned an error: ${result._message}`,
           );
-          // Можно добавить логику retry здесь или просто пробросить ошибку
           throw new Error(`LLM execution failed: ${result._message}`);
 
         case "call_tool":
           try {
-            // Вызываем инструмент
             const toolResult = await this.callTool(
               functionName,
               result._toolName,
               result._input,
             );
 
-            // Добавляем *успешный* результат инструмента в историю для LLM
             this.addHistoryMessage({
-              role: "user", // Представляем результат как новый ввод от "пользователя" (или "окружения")
+              role: "user",
               toolResponse: {
                 toolName: result._toolName,
                 toolResponse: toolResult,
               },
             });
-            // Продолжаем цикл while для следующего вызова LLM с обновленной историей
           } catch (toolError) {
-            // Ошибка выполнения или валидации callTool уже добавлена в историю внутри callTool
             console.error(
               `[smartExecute] Tool call failed: ${toolError instanceof Error ? toolError.message : String(toolError)}. Aborting execution.`,
             );
-            // Прерываем выполнение, так как инструмент не смог выполниться
             throw new Error(
               `Tool execution failed for '${result._toolName}': ${toolError instanceof Error ? toolError.message : String(toolError)}`,
             );
           }
-          break; // Выходим из switch, цикл while продолжится
+          break;
 
         default: {
-          // Неизвестный тип ответа от LLM
-          const unknownType = (result as any)?._type;
+          const unknownType = (result as { _type: string })?._type;
           console.error(
             `[smartExecute] Received unknown result type from LLM: ${unknownType}`,
           );
           throw new Error(`Unknown LLM result type: ${unknownType}`);
         }
       }
-    } // конец while
+    }
 
-    // Если цикл завершился без возврата (достигнут maxIterations)
     throw new Error(
       `[smartExecute] Failed to reach a final answer after ${maxIterations} iterations.`,
     );
