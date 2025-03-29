@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { ExecutionContext } from "../execution-context.ts";
 
 export const VariablesSchema = z.record(z.any());
 
@@ -34,14 +35,20 @@ export enum EventType {
   LLM_RESPONSE = "llm_response",
   TOOL_REQUEST = "tool_request",
   TOOL_RESPONSE = "tool_response",
+  STATE_UPDATE = "state_update",
 }
 
 export interface MiddlewareEvent<TInput = unknown, TOutput = unknown> {
   type: EventType;
-  initiator: "user" | "llm";
+  initiator: "user" | "llm" | "system";
   functionName?: string;
   toolName?: string;
   input?: TInput;
   output?: TOutput;
   timestamp: number;
+  executionContext: ExecutionContext;
+}
+export interface StateUpdateEvent extends MiddlewareEvent {
+  type: EventType.STATE_UPDATE;
+  initiator: "system";
 }

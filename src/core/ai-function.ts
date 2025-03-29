@@ -4,6 +4,7 @@ import { Tool } from "./tool.ts";
 import { LLM } from "./llm.ts";
 import { EventType } from "./prompt/schemas.ts";
 import type { MiddlewareEvent } from "./prompt/schemas.ts";
+import type { ExecutionContext } from "./execution-context.ts";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FunctionVariables = Record<string, any>;
@@ -40,32 +41,17 @@ export abstract class AiFunction<
     }
   }
 
-  public async runMiddleware(event: MiddlewareEvent): Promise<void> {
+  public async runMiddleware(
+    event: Omit<MiddlewareEvent, "executionContext">,
+    context: ExecutionContext,
+  ): Promise<void> {
+    const fullEvent: MiddlewareEvent = {
+      ...event,
+      executionContext: context,
+    };
     for (const middleware of this.middlewares) {
-      await middleware(event);
+      // Передаем полный event с контекстом
+      await middleware(fullEvent);
     }
-  }
-
-  // Backward compatibility methods
-  public async preRunMiddleware(input: TInput): Promise<void> {
-    await this.runMiddleware({
-      type: EventType.LLM_REQUEST,
-      initiator: "user",
-      functionName: this.name,
-      input,
-      timestamp: Date.now(),
-    });
-    return Promise.resolve();
-  }
-
-  public async postRunMiddleware(output: TOutput): Promise<void> {
-    await this.runMiddleware({
-      type: EventType.LLM_RESPONSE,
-      initiator: "llm",
-      functionName: this.name,
-      output,
-      timestamp: Date.now(),
-    });
-    return Promise.resolve();
   }
 }

@@ -3,6 +3,7 @@ import type { FunctionVariables, MiddlewareFunction } from "./ai-function.ts";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { EventType } from "./prompt/schemas.ts";
 import type { MiddlewareEvent } from "./prompt/schemas.ts";
+import type { ExecutionContext } from "./execution-context.ts";
 
 export abstract class Tool<
   TInput extends FunctionVariables = FunctionVariables,
@@ -27,34 +28,47 @@ export abstract class Tool<
     }
   }
 
-  public async runMiddleware(event: MiddlewareEvent): Promise<void> {
+  public async runMiddleware(
+    event: Omit<MiddlewareEvent, "executionContext">,
+    context: ExecutionContext,
+  ): Promise<void> {
+    const fullEvent: MiddlewareEvent = {
+      ...event,
+      executionContext: context,
+    };
     for (const middleware of this.middlewares) {
-      await middleware(event);
+      await middleware(fullEvent);
     }
   }
 
-  public async execute(input: TInput): Promise<TOutput> {
-    // Call middleware before execution
-    await this.runMiddleware({
-      type: EventType.TOOL_REQUEST,
-      initiator: "llm",
-      toolName: this.name,
-      input,
-      timestamp: Date.now(),
-    });
+  public async execute(
+    input: TInput,
+    context: ExecutionContext,
+  ): Promise<TOutput> {
+    await this.runMiddleware(
+      {
+        type: EventType.TOOL_REQUEST,
+        initiator: "llm",
+        toolName: this.name,
+        input,
+        timestamp: Date.now(),
+      },
+      context,
+    );
 
-    // Execute the tool
-    const result = await this.executeImpl(input);
+    const result = await this.executeImpl(input); // executeImpl не получает context
 
-    // Call middleware after execution
-    await this.runMiddleware({
-      type: EventType.TOOL_RESPONSE,
-      initiator: "llm", // Changed from "tool" to match type definition
-      toolName: this.name,
-      input,
-      output: result,
-      timestamp: Date.now(),
-    });
+    await this.runMiddleware(
+      {
+        type: EventType.TOOL_RESPONSE,
+        initiator: "llm", // Оставляем llm, т.к. это ответ на запрос llm
+        toolName: this.name,
+        input,
+        output: result,
+        timestamp: Date.now(),
+      },
+      context,
+    );
 
     return result;
   }

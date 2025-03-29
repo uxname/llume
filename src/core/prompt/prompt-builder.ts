@@ -5,12 +5,14 @@ import type { AiFunction, FunctionVariables } from "../ai-function.ts";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type { Tool } from "../tool.ts";
 import { BaseSuccessSchema, CallToolSchema, ErrorSchema } from "./schemas.ts";
+import type { ExecutionContext } from "../execution-context.ts";
 
 type ExecuteFunctionPromptParams = {
-  history: string; // Теперь это будет строка с ограниченной историей
+  history: string;
   jsonSchemas: string;
   query: string;
   tools: string;
+  state: string;
 };
 
 export class PromptBuilder {
@@ -35,15 +37,15 @@ export class PromptBuilder {
   }
 
   public static buildExecuteFunctionPrompt(
-    history: History,
+    context: ExecutionContext,
     aiFunction: AiFunction,
     variables: FunctionVariables,
     tools: Tool[],
-    historyLimit: number,
   ): string {
     const schemasString = this.mergeSystemSchemas(aiFunction);
     const limitedHistoryString =
-      history.getLimitedMessagesAsString(historyLimit);
+      context.executionHistory.getLimitedMessagesAsString(context.historyLimit);
+    const stateString = JSON.stringify(context.state);
 
     const userQueryRendered = aiFunction.promptTemplate.render(variables);
 
@@ -52,6 +54,7 @@ export class PromptBuilder {
       jsonSchemas: schemasString,
       query: userQueryRendered,
       tools: tools.map((tool) => tool.toString()).join("\n\n"),
+      state: stateString,
     };
 
     const result =

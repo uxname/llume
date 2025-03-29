@@ -9,6 +9,7 @@ import type {
   LlmResponse,
 } from "./prompt/schemas.ts";
 import type { HistoryMessage } from "./history.ts";
+import { EventType } from "./prompt/schemas.ts";
 
 export class Executor extends ExecutionContext {
   async executeSingleFunction<
@@ -23,36 +24,69 @@ export class Executor extends ExecutionContext {
       throw new Error(`Function ${functionName} not found`);
     }
 
+    await aiFunction.runMiddleware(
+      {
+        type: EventType.LLM_REQUEST,
+        initiator: "user",
+        functionName: functionName,
+        input: input,
+        timestamp: Date.now(),
+      },
+      this,
+    );
+
     const prompt = PromptBuilder.buildExecuteFunctionPrompt(
-      this.executionHistory,
+      this,
       aiFunction,
       input,
       aiFunction.tools ?? [],
-      this.historyLimit,
     );
 
-    const response = await aiFunction.llm.execute(prompt);
+    const rawResponse = await aiFunction.llm.execute(prompt);
+    let parsedResponse: LlmResponse<TOutput | unknown>;
 
+    // --- Парсинг ответа (без изменений) ---
     try {
-      const jsonMatch = response.match(
+      const jsonMatch = rawResponse.match(
         /```json\s*([\s\S]*?)\s*```|({[\s\S]*})/,
       );
       if (!jsonMatch || (!jsonMatch[1] && !jsonMatch[2])) {
         console.error(
           "LLM response does not contain a recognizable JSON structure:",
-          response,
+          rawResponse,
         );
-        return { _type: "error", _message: "LLM response is not valid JSON." };
+        parsedResponse = {
+          _type: "error",
+          _message: "LLM response is not valid JSON.",
+        };
+      } else {
+        const jsonString = jsonMatch[1] || jsonMatch[2];
+        parsedResponse = JSON.parse(jsonString) as LlmResponse<TOutput>;
       }
-      const jsonString = jsonMatch[1] || jsonMatch[2];
-      return JSON.parse(jsonString) as LlmResponse<TOutput>;
     } catch (error) {
-      console.error("Failed to parse LLM response:", response, error);
-      return {
+      console.error("Failed to parse LLM response:", rawResponse, error);
+      parsedResponse = {
         _type: "error",
         _message: `Failed to parse LLM response: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
+    // ------------------------------------
+
+    // --- ДОБАВЛЕНО: Вызываем middleware после ответа LLM ---
+    await aiFunction.runMiddleware(
+      {
+        type: EventType.LLM_RESPONSE,
+        initiator: "llm",
+        functionName: functionName,
+        input: input, // Можно передать input, который привел к этому ответу
+        output: parsedResponse, // Передаем распарсенный ответ
+        timestamp: Date.now(),
+      },
+      this,
+    ); // Передаем текущий ExecutionContext
+    // ----------------------------------------------------
+
+    return parsedResponse;
   }
 
   async callTool<
@@ -79,7 +113,7 @@ export class Executor extends ExecutionContext {
     }
 
     try {
-      const result = await tool.execute(input);
+      const result = await tool.execute(input, this);
       try {
         tool.outputSchema.parse(result);
       } catch (validationError) {
@@ -156,12 +190,12 @@ export class Executor extends ExecutionContext {
     // Other pre-run logic could be added here if needed (logging, setup etc.)
     // --- End: Integrated preRunMiddleware functionality ---
 
-    const currentInput = { ...initialInput };
+    const currentInput = { ...initialInput }; // Не используется напрямую в цикле, т.к. input передается в executeSingleFunction
     let iteration = 0;
-
     const initialUserQuery = aiFunction.promptTemplate
       .render<TInput>(initialInput)
       .trim();
+
     if (initialUserQuery) {
       if (
         this.executionHistory.messages.length === 0 ||

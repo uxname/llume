@@ -1,9 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { AiFunction } from "./ai-function.ts";
 import { History, type HistoryMessage } from "./history.ts";
 
 export class ExecutionContext {
   public executionHistory = new History();
-  public readonly historyLimit: number; // Делаем его публичным readonly
+  public readonly historyLimit: number;
+  public state: Record<string, any> = {};
 
   protected functions: Map<string, AiFunction> = new Map();
 
@@ -27,5 +29,9 @@ export class ExecutionContext {
 
   addHistoryMessage(message: HistoryMessage): void {
     this.executionHistory.addMessage(message);
+  }
+
+  public updateState(newState: Record<string, any>): void {
+    this.state = { ...this.state, ...newState };
   }
 }
