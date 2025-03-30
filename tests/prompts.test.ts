@@ -1,4 +1,4 @@
-import { describe, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { PromptHelper } from "../src/prompts/prompt-helper.ts";
 import * as path from "node:path";
 
@@ -9,7 +9,6 @@ describe("Prompts", () => {
       "src",
       "prompts",
       "prompt-templates",
-      "system-prompt",
     );
 
     const prompt = await PromptHelper.loadTemplate(
@@ -28,5 +27,6 @@ describe("Prompts", () => {
     });
 
     console.log("Compiled prompt:", compiledPrompt);
+    expect(compiledPrompt).toBeDefined();
   });
 });
