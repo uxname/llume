@@ -38,7 +38,7 @@ export class History {
    *
    * @param limit - The maximum number of messages to return (including the first).
    *                Must be at least 2 if more than 1 message exists.
-   * @returns An array of messages suitable for the LLM context.
+   * @returns An array of messages suitable for the LLM llm-request.
    */
   getLimitedMessages(limit: number): HistoryMessage[] {
     const actualLimit = Math.max(limit, 2); // Ensure at least 2 if possible

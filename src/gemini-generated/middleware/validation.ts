@@ -10,7 +10,7 @@ import type { LlmResponse } from "../schemas"; // Import common response types
  * - Validates LLM input (function input) before execution (can be redundant but safe).
  * - Validates successful LLM output (_data field) after execution.
  * - Validates tool output after execution.
- * Sets `context.error` if validation fails.
+ * Sets `llm-request.error` if validation fails.
  */
 export const validationMiddleware: MiddlewareFn = async (context, next) => {
   let validationError: ValidationError | null = null;
@@ -51,7 +51,7 @@ export const validationMiddleware: MiddlewareFn = async (context, next) => {
     try {
       if (context.request.type === "tool") {
         const toolDef = context.getToolDefinition(context.request.name);
-        // context.response contains the direct output from tool.execute
+        // llm-request.response contains the direct output from tool.execute
         toolDef.outputSchema.parse(context.response);
       } else if (context.request.type === "llm") {
         const llmResponse = context.response as LlmResponse<unknown>; // Cast response
@@ -63,7 +63,7 @@ export const validationMiddleware: MiddlewareFn = async (context, next) => {
         // We don't validate 'error' or 'call_tool' responses against function output schema
       }
     } catch (error) {
-      // If output validation fails, set context.error
+      // If output validation fails, set llm-request.error
       // The Agent loop needs to handle this specific case for LLM retries.
       if (error instanceof z.ZodError) {
         context.error = new ValidationError(

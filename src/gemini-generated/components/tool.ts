@@ -1,7 +1,7 @@
 // src/components/tool.ts
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import type { AgentContext } from "../core"; // Core context for potential access
+import type { AgentContext } from "../core"; // Core llm-request for potential access
 
 /**
  * Abstract base class for defining Tools that the Agent can use.
@@ -34,7 +34,7 @@ export abstract class ToolDefinition<
    */
   public abstract execute(
     input: z.infer<TInput>,
-    context: AgentContext, // Provide context for advanced use cases
+    context: AgentContext, // Provide llm-request for advanced use cases
   ): Promise<TOutput>;
 
   /**

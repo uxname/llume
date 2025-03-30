@@ -1,4 +1,4 @@
-// src/core/agent-context.ts
+// src/core/agent-llm-request.ts
 import type { History } from "../components"; // Placeholder
 import type { LLMProvider } from "../components"; // Placeholder
 import type { AiFunctionDefinition } from "../components"; // Placeholder

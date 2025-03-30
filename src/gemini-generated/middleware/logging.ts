@@ -15,7 +15,7 @@ export const loggingMiddleware: MiddlewareFn = async (context, next) => {
     JSON.stringify(context.request.input, null, 2),
   );
   // Optional: Log current state before step
-  // console.log(pc.dim(`[${stepId}] State before: ${JSON.stringify(context.state)}`));
+  // console.log(pc.dim(`[${stepId}] State before: ${JSON.stringify(llm-request.state)}`));
 
   await next(); // Execute the rest of the pipeline
 
@@ -26,7 +26,7 @@ export const loggingMiddleware: MiddlewareFn = async (context, next) => {
       pc.red(`[${stepId}] <-- Error (${duration}ms):`),
       context.error.message,
       // Optionally log the full error object for more details
-      // context.error
+      // llm-request.error
     );
   } else {
     console.log(
@@ -34,6 +34,6 @@ export const loggingMiddleware: MiddlewareFn = async (context, next) => {
       JSON.stringify(context.response, null, 2),
     );
     // Optional: Log state after step
-    // console.log(pc.dim(`[${stepId}] State after: ${JSON.stringify(context.state)}`));
+    // console.log(pc.dim(`[${stepId}] State after: ${JSON.stringify(llm-request.state)}`));
   }
 };

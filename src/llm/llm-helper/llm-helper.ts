@@ -73,10 +73,4 @@ export class LlmHelper {
   private static findStartIndices(text: string): number[] {
     return [text.indexOf("{"), text.indexOf("[")].filter((idx) => idx !== -1);
   }
-
-  private static findEndIndices(text: string): number[] {
-    return [text.lastIndexOf("}"), text.lastIndexOf("]")].filter(
-      (idx) => idx !== -1,
-    );
-  }
 }

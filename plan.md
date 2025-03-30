@@ -163,10 +163,10 @@ ai0-agent/
 
         export const historyManagerMiddleware: MiddlewareFn = async (context, next) => {
           // Добавить сообщение пользователя/инструмента перед вызовом LLM/Tool?
-          // Например, если это LLM шаг, добавить user query из context.request
+          // Например, если это LLM шаг, добавить user query из llm-request.request
           if (context.currentStep.type === 'llm' && context.request?.input) {
-             // Логика добавления user message или tool response message в context.history
-             // ... (нужно аккуратно определить, что добавлять на основе context.request)
+             // Логика добавления user message или tool response message в llm-request.history
+             // ... (нужно аккуратно определить, что добавлять на основе llm-request.request)
           }
 
           await next(); // Выполнить шаг (LLM/Tool)
@@ -175,7 +175,7 @@ ai0-agent/
           if (!context.error && context.response) {
             const message: HistoryMessage = {
               role: context.currentStep.type === 'llm' ? 'assistant' : 'user', // Ответ LLM -> assistant, ответ Tool -> user (tool response)
-              // ... (логика формирования сообщения на основе context.response и context.currentStep)
+              // ... (логика формирования сообщения на основе llm-request.response и llm-request.currentStep)
             };
             context.history.addMessage(message);
           }

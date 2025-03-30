@@ -78,7 +78,7 @@ export class PromptBuilder {
    *
    * @param context - The current AgentContext containing all necessary information.
    * @returns The fully rendered prompt string.
-   * @throws {Error} If required context information is missing or rendering fails.
+   * @throws {Error} If required llm-request information is missing or rendering fails.
    */
   public static buildExecuteFunctionPrompt(context: AgentContext): string {
     const functionDef = context.getFunctionDefinition(context.request.name); // Get the target function

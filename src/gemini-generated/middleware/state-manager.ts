@@ -13,7 +13,7 @@ const simpleJsonEqual = (a: any, b: any): boolean => {
 };
 
 /**
- * Middleware to monitor and log changes to the `context.state`.
+ * Middleware to monitor and log changes to the `llm-request.state`.
  * It compares the state before and after the subsequent middleware and handler run.
  * Useful for debugging state modifications during agent execution.
  */
@@ -66,25 +66,25 @@ export const stateChangeLoggerMiddleware: MiddlewareFn = async (
 /*
 import { z } from 'zod';
 export const createStateValidatorMiddleware = (stateSchema: z.ZodSchema): MiddlewareFn => {
-    return async (context, next) => {
+    return async (llm-request, next) => {
         // Validate state *before*? Usually not needed.
 
         await next();
 
         // Validate state *after* the step, only if no error occurred
-        if (!context.error) {
+        if (!llm-request.error) {
             try {
-                stateSchema.parse(context.state);
+                stateSchema.parse(llm-request.state);
             } catch (error) {
                 if (error instanceof z.ZodError) {
-                     context.error = new ValidationError(
-                        `State validation failed after step ${context.request.type}:${context.request.name}`,
+                     llm-request.error = new ValidationError(
+                        `State validation failed after step ${llm-request.request.type}:${llm-request.request.name}`,
                         error.issues
                     );
                      console.error(
                         pc.red(`[StateValidator] State validation failed:`),
-                        context.error.message,
-                        (context.error as ValidationError).details
+                        llm-request.error.message,
+                        (llm-request.error as ValidationError).details
                     );
                 } else {
                     // Handle unexpected validation errors

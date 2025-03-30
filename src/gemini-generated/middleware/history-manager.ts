@@ -28,7 +28,7 @@ export const historyManagerMiddleware: MiddlewareFn = async (context, next) => {
       // Tool step finished, add tool response as a user message
       const toolResponsePayload: ToolResponsePayload = {
         toolName: context.request.name,
-        // context.response contains the direct output from tool.execute
+        // llm-request.response contains the direct output from tool.execute
         // It should match the tool's output schema if validation passed
         toolResponse: context.response as any, // Cast needed as response type is generic
       };
@@ -49,12 +49,12 @@ export const historyManagerMiddleware: MiddlewareFn = async (context, next) => {
           "Message:",
           messageToAdd,
         );
-        // Optionally set context.error here if history failure is critical
-        // context.error = new AgentError("Failed to update history");
+        // Optionally set llm-request.error here if history failure is critical
+        // llm-request.error = new AgentError("Failed to update history");
       }
     }
   }
-  // If context.error exists, we typically don't add the failed response automatically.
+  // If llm-request.error exists, we typically don't add the failed response automatically.
   // Error handling logic (either in Agent or another middleware) might add
   // specific error messages to the history if needed for retries.
 };

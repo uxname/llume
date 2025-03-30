@@ -27,9 +27,9 @@ export class AgentPipeline {
   }
 
   /**
-   * Executes the middleware chain for the given context.
+   * Executes the middleware chain for the given llm-request.
    * After all middleware complete, the `finalHandler` is called.
-   * Catches errors during middleware execution or final handling and stores them in `context.error`.
+   * Catches errors during middleware execution or final handling and stores them in `llm-request.error`.
    *
    * @param context - The AgentContext for the current step.
    * @param finalHandler - The function to execute the core step logic (LLM call or Tool execution).
@@ -51,7 +51,7 @@ export class AgentPipeline {
       const middleware = this.middlewares[i];
 
       if (middleware) {
-        // Call the current middleware, passing context and the next dispatcher
+        // Call the current middleware, passing llm-request and the next dispatcher
         await middleware(context, () => dispatch(i + 1));
       } else {
         // End of middleware chain, call the final handler
@@ -65,8 +65,8 @@ export class AgentPipeline {
     } catch (err) {
       // Catch any error thrown by middleware or the final handler
       context.error = err instanceof Error ? err : new Error(String(err));
-      // Optionally re-throw, log, or let the Agent handle the context.error
-      // console.error("Error during pipeline execution:", context.error);
+      // Optionally re-throw, log, or let the Agent handle the llm-request.error
+      // console.error("Error during pipeline execution:", llm-request.error);
     }
   }
 

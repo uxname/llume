@@ -1,9 +1,20 @@
-import fs from "fs/promises";
+import fs from "fs";
 import * as handlebars from "handlebars";
+import * as path from "node:path";
 
 export class PromptHelper {
-  static async loadTemplate(templatePath: string): Promise<string> {
-    return await fs.readFile(templatePath, "utf-8");
+  static loadTemplate(templatePath: string): string {
+    return fs.readFileSync(templatePath, "utf-8");
+  }
+
+  static loadSystemPrompt(): string {
+    const systemPromptDir = path.join(
+      process.cwd(),
+      "src",
+      "prompt",
+      "prompt-templates",
+    );
+    return PromptHelper.loadTemplate(path.join(systemPromptDir, "prompt.hbs"));
   }
 
   static compile<T>(template: string, data: T): string {

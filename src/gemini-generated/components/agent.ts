@@ -293,7 +293,7 @@ export class Agent<TState extends Record<string, any> = Record<string, any>> {
         // Prepare for the next LLM call to process the tool result.
         nextStep = {
           type: "llm",
-          name: functionName, // Go back to the original function context
+          name: functionName, // Go back to the original function llm-request
           input: initialInput, // Or potentially modified input based on state/logic
         };
         // Note: The history now contains the tool result, so the LLM
@@ -322,7 +322,7 @@ export class Agent<TState extends Record<string, any> = Record<string, any>> {
         const functionDef = context.getFunctionDefinition(context.request.name); // Throws if not found
         let rawResponse: string;
         try {
-          // Build prompt using potentially updated context (state, history)
+          // Build prompt using potentially updated llm-request (state, history)
           // Use the imported and corrected PromptBuilder directly
           const prompt =
             ActualPromptBuilder.buildExecuteFunctionPrompt(context);
@@ -360,7 +360,7 @@ export class Agent<TState extends Record<string, any> = Record<string, any>> {
         }
 
         try {
-          // Execute the tool's logic, passing the context
+          // Execute the tool's logic, passing the llm-request
           context.response = await toolDef.execute(toolInput, context);
           // Optional: Output validation could happen here or preferably in validationMiddleware
         } catch (error) {

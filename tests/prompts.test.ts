@@ -11,7 +11,7 @@ describe("Prompts", () => {
       "prompt-templates",
     );
 
-    const prompt = await PromptHelper.loadTemplate(
+    const prompt = PromptHelper.loadTemplate(
       path.join(systemPromptDir, "prompt.hbs"),
     );
 

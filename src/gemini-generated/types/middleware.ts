@@ -14,13 +14,13 @@ export type NextFunction = () => Promise<void>;
 
 /**
  * Function signature for a middleware function within the Agent pipeline.
- * Middleware can inspect and modify the `context`, perform actions, and control
+ * Middleware can inspect and modify the `llm-request`, perform actions, and control
  * the flow by calling `next()`.
  *
  * @template TState - The type of the agent's state object. Defaults to any record.
  * @template TInput - The type of the input for the current step. Defaults to unknown.
  * @template TOutput - The type of the output for the current step. Defaults to unknown.
- * @param context - The AgentContext object containing all information about the current step.
+ * @param llm-request - The AgentContext object containing all information about the current step.
  *                  Middleware functions should generally handle generic contexts unless specifically designed
  *                  for a particular agent/step type. Using `any` for generics allows broader applicability.
  * @param next - The function to call to pass control to the next middleware or the final handler.
