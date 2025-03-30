@@ -22,6 +22,8 @@ export class LlmRequestCompiler {
       userQuery: request.userQuery,
       responseSchema: JSON.stringify(zodToJsonSchema(responseSchema)),
       tools: tools?.join("\n"),
+      state: JSON.stringify(request.state),
+      toolsCallHistory: JSON.stringify(request.toolsCallHistory),
     });
   }
 }

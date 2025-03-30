@@ -28,6 +28,23 @@ describe("LlmRequestCompiler", () => {
       randomNumberGeneratorTool,
     ]);
 
+    request.state = {
+      randomString: "Hello world, this is a random string",
+    };
+
+    request.toolsCallHistory = [
+      {
+        toolName: randomNumberGeneratorTool.name,
+        toolInput: {
+          min: 1,
+          max: 100,
+        },
+        toolOutput: {
+          number: 77,
+        },
+      },
+    ];
+
     const compiledRequest = LlmRequestCompiler.compile(request);
     console.log(compiledRequest);
   });
