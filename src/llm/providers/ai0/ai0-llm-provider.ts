@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { BaseLlmProvider } from "../base-llm-provider/base-llm-provider.ts";
+import { BaseLlmProvider } from "../../base-llm-provider/base-llm-provider.ts";
 
 export interface Ai0LlmRequestParams {
   prompt: string;
@@ -31,7 +31,7 @@ export class Ai0LlmProvider extends BaseLlmProvider {
     this.requestTimeout = requestTimeout;
   }
 
-  public async executeRaw(prompt: string): Promise<string> {
+  protected async executeRaw(prompt: string): Promise<string> {
     const params: Ai0LlmRequestParams = {
       prompt,
       provider: this.defaultProvider,

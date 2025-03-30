@@ -8,7 +8,7 @@ describe("AI0 LLM Provider", () => {
     const llmProvider = new Ai0LlmProvider(baseUrl, apiKey);
 
     test("should response", async () => {
-      const response = await llmProvider.executeRaw("2+2");
+      const response = await llmProvider.execute("2+2");
       expect(response).toBeTypeOf("string");
       expect(response).not.toBeUndefined();
       expect(response).not.toBe("");

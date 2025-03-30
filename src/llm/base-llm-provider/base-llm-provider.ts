@@ -3,7 +3,7 @@ import { LlmHelper } from "../llm-helper/llm-helper.ts";
 export abstract class BaseLlmProvider {
   public abstract readonly name: string;
 
-  public abstract executeRaw(prompt: string): Promise<string>;
+  protected abstract executeRaw(prompt: string): Promise<string>;
 
   public preparePrompt(prompt: string): string {
     return prompt;
@@ -18,7 +18,7 @@ export abstract class BaseLlmProvider {
 
     const rawResponse = await this.executeRaw(preparedPrompt);
 
-    const sanitizedResponse = LlmHelper.sanitizeLLMJsonResponse(rawResponse);
+    const sanitizedResponse = LlmHelper.sanitizeLLMTextResponse(rawResponse);
 
     return this.finalizeResponse(sanitizedResponse);
   }
