@@ -1,0 +1,53 @@
+import type { LlmRequest } from "../llm-request/llm-request.ts";
+import type { LlmResponse } from "../llm-response/types.ts";
+
+export enum RequestTarget {
+  LLM = "llm",
+  TOOL = "tool",
+}
+
+export interface Execution {
+  executionDate: Date;
+
+  requestTarget: RequestTarget;
+
+  toolName?: string;
+  input: unknown;
+  response: LlmResponse;
+}
+
+export class Pipeline {
+  public executions: Execution[] = [];
+  public llmRequest: LlmRequest;
+
+  constructor(request: LlmRequest) {
+    this.llmRequest = {
+      // prevent mutation
+      ...request,
+    };
+  }
+
+  addExecution(
+    requestType: RequestTarget,
+    input: unknown,
+    response: LlmResponse,
+    toolName?: string,
+  ) {
+    console.log(
+      `[Pipeline] addExecution:`,
+      JSON.stringify({
+        requestType,
+        input,
+        response,
+        toolName,
+      }),
+    );
+    this.executions.push({
+      executionDate: new Date(),
+      requestTarget: requestType,
+      toolName,
+      input,
+      response,
+    });
+  }
+}

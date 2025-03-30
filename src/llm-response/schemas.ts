@@ -9,7 +9,7 @@ export const BaseResponseSchema = z.object({
 
 export const ErrorResponseSchema = BaseResponseSchema.extend({
   type: z.literal(LLMResponseTypes.ERROR),
-  error: z.string().describe("Error message"),
+  message: z.string().describe("Error message"),
 });
 
 export function SuccessResponseSchema<TData>(dataSchema: z.ZodType<TData>) {

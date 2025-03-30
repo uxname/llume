@@ -1,7 +1,7 @@
 // src/providers/ai0-llm.ts
 import axios, { AxiosError } from "axios";
-import { LLMProvider } from "../components";
 import { LlmError } from "../core";
+import { BaseLlmProvider } from "../../llm/base-llm-provider/base-llm-provider.ts";
 // Optional: for logging within the provider if needed
 // import pc from 'picocolors';
 
@@ -17,7 +17,7 @@ export interface Ai0LlmRequestParams {
 /**
  * An LLMProvider implementation for interacting with the AI0 proxy service.
  */
-export class Ai0Llm extends LLMProvider {
+export class Ai0Llm extends BaseLlmProvider {
   public readonly name = "AI0"; // Identifier for this provider
 
   private readonly baseUrl: string;
@@ -55,7 +55,7 @@ export class Ai0Llm extends LLMProvider {
    * @returns A promise resolving to the cleaned text response from the LLM.
    * @throws {LlmError} If the API call fails or returns an error status.
    */
-  public async execute(prompt: string): Promise<string> {
+  public async executeRaw(prompt: string): Promise<string> {
     const params: Ai0LlmRequestParams = {
       prompt,
       provider: this.defaultProvider,

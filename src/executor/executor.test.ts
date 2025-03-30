@@ -1,13 +1,14 @@
 import { describe, test } from "vitest";
-import { LlmRequest } from "../llm-request.ts";
 import { z } from "zod";
-import { LlmRequestCompiler } from "./llm-request-compiler.ts";
-import type { BaseTool } from "../../tool/base-tool.ts";
-import { Role } from "../types.ts";
-import { Ai0Llm } from "../../gemini-generated";
+import type { BaseTool } from "../tool/base-tool.ts";
+import { LlmRequest } from "../llm-request/llm-request.ts";
+import { Role } from "../llm-request/types.ts";
+import { Ai0Llm } from "../gemini-generated";
+import { Executor } from "./executor.ts";
+import { Pipeline } from "./pipeline.ts";
 
-describe("LlmRequestCompiler", () => {
-  test("should compile", async () => {
+describe("Executor", () => {
+  test("should execute", async () => {
     const successDataSchema = z.object({
       randomString: z.string().describe("Random 3-4 word sentence"),
       randomNumber: z.number().describe("Random number from 1 to 100"),
@@ -17,6 +18,7 @@ describe("LlmRequestCompiler", () => {
       async execute(
         input: z.infer<typeof this.inputSchema>,
       ): Promise<z.infer<typeof this.outputSchema>> {
+        console.log("RandomNumberGeneratorTool.execute", input);
         return {
           number: Math.floor(
             Math.random() * (input.max - input.min + 1) + input.min,
@@ -43,35 +45,21 @@ describe("LlmRequestCompiler", () => {
     request.history.push({
       role: Role.USER,
       content:
-        "For the random name - generate a random existing country name (do not use tool for this)",
+        "For the random name - imagine any existing country name (you don't need to use tool for this)",
     });
 
     request.state = {
       randomString: "Hello world, this is a random string",
     };
 
-    request.toolsCallHistory = [
-      {
-        toolName: randomNumberGeneratorTool.name,
-        toolInput: {
-          min: 1,
-          max: 100,
-        },
-        toolOutput: {
-          number: 77,
-        },
-      },
-    ];
-
-    const compiledRequest = LlmRequestCompiler.compile(request);
-    console.log(
-      compiledRequest,
-      "\n------------------------------------------------",
-    );
-
     const llm = new Ai0Llm(process.env.AI0_URL!, process.env.AI0_API_KEY!);
 
-    const response = await llm.execute(compiledRequest);
-    console.log(response);
+    const executor = new Executor(llm);
+    const pipeline = new Pipeline(request);
+
+    const result =
+      await executor.execute<z.infer<typeof successDataSchema>>(pipeline);
+
+    console.log("Result:", result);
   });
 });

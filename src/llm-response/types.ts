@@ -13,7 +13,7 @@ export interface SuccessResponse<TData> extends BaseResponse {
 }
 
 export interface ErrorResponse extends BaseResponse {
-  error: string;
+  message: string;
 }
 
 export interface CallToolResponse<TToolInput> extends BaseResponse {
@@ -21,7 +21,7 @@ export interface CallToolResponse<TToolInput> extends BaseResponse {
   tool_input: TToolInput;
 }
 
-export type LlmResponse<TSuccessData, TToolInput> =
-  | SuccessResponse<TSuccessData>
+export type LlmResponse<T = unknown> =
+  | SuccessResponse<T>
   | ErrorResponse
-  | CallToolResponse<TToolInput>;
+  | CallToolResponse<T>;

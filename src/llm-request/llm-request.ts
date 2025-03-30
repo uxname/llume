@@ -11,6 +11,6 @@ export class LlmRequest {
     public tools?: BaseTool[],
     public state?: any,
     public history: Message[] = [],
-    public toolsCallHistory?: ToolCallResult[],
+    public toolsCallHistory: ToolCallResult[] = [],
   ) {}
 }
