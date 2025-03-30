@@ -24,6 +24,10 @@ export class LlmRequestCompiler {
       tools: tools?.join("\n"),
       state: JSON.stringify(request.state),
       toolsCallHistory: JSON.stringify(request.toolsCallHistory),
+      history:
+        request.history?.length > 0
+          ? JSON.stringify(request.history)
+          : undefined,
     });
   }
 }
