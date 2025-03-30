@@ -12,112 +12,66 @@ import { type Pipeline, RequestTarget } from "./pipeline.ts";
 export class Executor {
   constructor(public readonly llm: BaseLlmProvider) {}
 
-  // нужно сделать чтобы вызов происходил на основе того что лежит в pipeline,
-  // если там пусто - значит это первй запрос, если там в истории есть что последний был
-  // вызов tool - значит нужно сделать вызов llm с результом tool
   async execute<TData>(pipeline: Pipeline): Promise<TData> {
-    if (pipeline.executions.length === 0) {
-      const prompt = LlmRequestCompiler.compile(pipeline.llmRequest);
-      const rawResponse = await this.llm.execute(prompt);
-      const response: LlmResponse<TData> = JSON.parse(rawResponse);
+    if (pipeline.executions.length > 0) {
+      const lastExecution = pipeline.executions[pipeline.executions.length - 1];
 
-      pipeline.addExecution(
-        RequestTarget.LLM,
-        pipeline.llmRequest.userQuery,
-        response,
-      );
-
-      switch (response.type) {
-        case LLMResponseTypes.ERROR: {
-          const result = response as ErrorResponse;
-          throw new Error(result.message);
-        }
-        case LLMResponseTypes.SUCCESS: {
-          const result = response as SuccessResponse<TData>;
-          return result.data;
-        }
-        case LLMResponseTypes.CALL_TOOL: {
-          // call tool and rerun
-          const result = response as CallToolResponse<unknown>;
-          const tool = pipeline.llmRequest.tools?.find(
-            (tool) => tool.name === result.tool_name,
-          );
-
-          if (!tool) {
-            throw new Error(`Tool ${result.tool_name} not found`);
-          }
-
-          const toolResult = await tool.execute(result.tool_input);
-
-          pipeline.addExecution(
-            RequestTarget.TOOL,
-            result.tool_input,
-            toolResult,
-            result.tool_name,
-          );
-
-          return await this.execute(pipeline);
-        }
-        default:
-          throw new Error(`Unknown response type: ${response.type}`);
+      if (lastExecution.requestTarget === RequestTarget.TOOL) {
+        pipeline.llmRequest.toolsCallHistory?.push({
+          toolName: lastExecution.toolName!,
+          toolInput: lastExecution.input,
+          toolOutput: lastExecution.response,
+        });
+      } else if (lastExecution.requestTarget === RequestTarget.LLM) {
+        // If the last request was to LLM, then the pipeline is not in the expected state
+        throw new Error(
+          "Pipeline is broken: Last execution was LLM, expected TOOL",
+        );
       }
     }
 
-    const lastExecution = pipeline.executions[pipeline.executions.length - 1];
+    const prompt = LlmRequestCompiler.compile(pipeline.llmRequest);
+    const rawResponse = await this.llm.execute(prompt);
+    const response: LlmResponse<TData> = JSON.parse(rawResponse);
 
-    if (lastExecution.requestTarget === RequestTarget.TOOL) {
-      // нужно поместить результат выполнения tool в историю и сделать вызов llm
-      pipeline.llmRequest.toolsCallHistory?.push({
-        toolName: lastExecution.toolName!,
-        toolInput: lastExecution.input,
-        toolOutput: lastExecution.response,
-      });
+    pipeline.addExecution(
+      RequestTarget.LLM,
+      pipeline.llmRequest.userQuery,
+      response,
+    );
 
-      const prompt = LlmRequestCompiler.compile(pipeline.llmRequest);
-      const rawResponse = await this.llm.execute(prompt);
-      const response: LlmResponse<TData> = JSON.parse(rawResponse);
-
-      pipeline.addExecution(
-        RequestTarget.LLM,
-        pipeline.llmRequest.userQuery,
-        response,
-      );
-
-      switch (response.type) {
-        case LLMResponseTypes.ERROR: {
-          const result = response as ErrorResponse;
-          throw new Error(result.message);
-        }
-        case LLMResponseTypes.SUCCESS: {
-          const result = response as SuccessResponse<TData>;
-          return result.data;
-        }
-        case LLMResponseTypes.CALL_TOOL: {
-          const result = response as CallToolResponse<unknown>;
-          const tool = pipeline.llmRequest.tools?.find(
-            (tool) => tool.name === result.tool_name,
-          );
-
-          if (!tool) {
-            throw new Error(`Tool ${result.tool_name} not found`);
-          }
-
-          const toolResult = await tool.execute(result.tool_input);
-
-          pipeline.addExecution(
-            RequestTarget.TOOL,
-            result.tool_input,
-            toolResult,
-            result.tool_name,
-          );
-
-          return await this.execute(pipeline);
-        }
-        default:
-          throw new Error(`Unknown response type: ${response.type}`);
+    switch (response.type) {
+      case LLMResponseTypes.ERROR: {
+        const result = response as ErrorResponse;
+        throw new Error(result.message);
       }
-    } else {
-      throw new Error("Pipeline is broken");
+      case LLMResponseTypes.SUCCESS: {
+        const result = response as SuccessResponse<TData>;
+        return result.data;
+      }
+      case LLMResponseTypes.CALL_TOOL: {
+        const result = response as CallToolResponse<unknown>;
+        const tool = pipeline.llmRequest.tools?.find(
+          (tool) => tool.name === result.tool_name,
+        );
+
+        if (!tool) {
+          throw new Error(`Tool ${result.tool_name} not found`);
+        }
+
+        const toolResult = await tool.execute(result.tool_input);
+
+        pipeline.addExecution(
+          RequestTarget.TOOL,
+          result.tool_input,
+          toolResult,
+          result.tool_name,
+        );
+
+        return await this.execute(pipeline);
+      }
+      default:
+        throw new Error(`Unknown response type: ${response.type}`);
     }
   }
 }
