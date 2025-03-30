@@ -2,7 +2,7 @@
 
 // Import AgentContext type carefully to avoid runtime circular dependencies
 // This is generally safe as it's only used for type information.
-import type { AgentContext } from "../core/agent-context";
+import type { AgentContext } from "../core";
 
 /**
  * Function signature for the 'next' function passed to middleware.

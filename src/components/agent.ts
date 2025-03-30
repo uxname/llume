@@ -16,20 +16,17 @@ import {
   ToolExecutionError,
   ValidationError,
   AgentError,
-} from "../core/errors";
-import type { MiddlewareFn } from "../types/middleware";
+} from "../core";
+import type { MiddlewareFn } from "../types";
 import type { LLMProvider } from "./llm-provider";
 // Import History as value
 import { History } from "./history";
 import type { AiFunctionDefinition } from "./ai-function";
 import type { ToolDefinition } from "./tool";
 // Import the actual PromptBuilder class
-import { PromptBuilder } from "../prompts/prompt-builder";
+import { PromptBuilder } from "../prompts";
 // Import LlmResponse and FunctionVariables as types
-import {
-  type LlmResponse,
-  type FunctionVariables,
-} from "../schemas/common"; // Common response schemas
+import { type LlmResponse, type FunctionVariables } from "../schemas"; // Common response schemas
 
 // REMOVE THE PLACEHOLDER DefaultPromptBuilder OBJECT
 // const DefaultPromptBuilder = { ... };
@@ -88,7 +85,9 @@ export class Agent<TState extends Record<string, any> = Record<string, any>> {
    * Registers an AI Function definition with the Agent.
    * @param definition - The AiFunctionDefinition instance.
    */
-  addFunction(definition: AiFunctionDefinition<z.ZodTypeAny, z.ZodTypeAny>): this {
+  addFunction(
+    definition: AiFunctionDefinition<z.ZodTypeAny, z.ZodTypeAny>,
+  ): this {
     if (this.functionDefinitions.has(definition.name)) {
       console.warn(`Overwriting function definition for "${definition.name}"`);
     }
@@ -344,7 +343,6 @@ export class Agent<TState extends Record<string, any> = Record<string, any>> {
         // the agent loop will handle it in the 'case "error":' block.
         // No need for extra try-catch here for parsing itself,
         // as parseLlmResponse handles its internal errors.
-
       } else if (stepType === "tool") {
         // --- Tool Final Handler ---
         const toolDef = context.getToolDefinition(context.request.name); // Throws if not found

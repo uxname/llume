@@ -1,9 +1,9 @@
 // src/core/agent-context.ts
-import type { History } from "../components/history"; // Placeholder
-import type { LLMProvider } from "../components/llm-provider"; // Placeholder
-import type { AiFunctionDefinition } from "../components/ai-function"; // Placeholder
-import type { ToolDefinition } from "../components/tool"; // Placeholder
-import type { LlmResponse } from "../schemas/common"; // Placeholder
+import type { History } from "../components"; // Placeholder
+import type { LLMProvider } from "../components"; // Placeholder
+import type { AiFunctionDefinition } from "../components"; // Placeholder
+import type { ToolDefinition } from "../components"; // Placeholder
+import type { LlmResponse } from "../schemas"; // Placeholder
 import { DefinitionNotFoundError } from "./errors"; // Import the error class
 
 /**

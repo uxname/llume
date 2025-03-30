@@ -1,5 +1,5 @@
 // src/middleware/stateManager.ts
-import type { MiddlewareFn } from "../types/middleware";
+import type { MiddlewareFn } from "../types";
 import pc from "picocolors"; // Optional: for colored logging
 // For more robust comparison, consider a library like 'fast-deep-equal'
 // import equal from 'fast-deep-equal';

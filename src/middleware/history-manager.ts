@@ -1,10 +1,7 @@
 // src/middleware/historyManager.ts
-import type { MiddlewareFn } from "../types/middleware";
-import type {
-  HistoryMessage,
-  ToolResponsePayload,
-} from "../components/history";
-import type { LlmResponse } from "../schemas/common";
+import type { MiddlewareFn } from "../types";
+import type { HistoryMessage, ToolResponsePayload } from "../components";
+import type { LlmResponse } from "../schemas";
 
 /**
  * Middleware responsible for adding messages to the conversation history

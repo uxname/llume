@@ -1,8 +1,8 @@
 // src/middleware/validation.ts
-import type { MiddlewareFn } from "../types/middleware";
-import { ValidationError } from "../core/errors";
+import type { MiddlewareFn } from "../types";
+import { ValidationError } from "../core";
 import { z } from "zod";
-import type { LlmResponse } from "../schemas/common"; // Import common response types
+import type { LlmResponse } from "../schemas"; // Import common response types
 
 /**
  * Middleware for validating step inputs and outputs against their Zod schemas.

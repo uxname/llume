@@ -1,5 +1,5 @@
 // src/components/history.ts
-import type { FunctionVariables } from "../schemas/common"; // Assuming FunctionVariables is defined here or in types
+import type { FunctionVariables } from "../schemas"; // Assuming FunctionVariables is defined here or in types
 
 // Re-using the types from the original implementation
 export interface ToolResponsePayload {

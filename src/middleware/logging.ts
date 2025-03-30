@@ -1,5 +1,5 @@
 // src/middleware/logging.ts
-import type { MiddlewareFn } from "../types/middleware";
+import type { MiddlewareFn } from "../types";
 import pc from "picocolors"; // For colored output
 
 /**

@@ -1,6 +1,6 @@
 // src/middleware/errorHandler.ts
-import type { MiddlewareFn } from "../types/middleware";
-import { AgentError } from "../core/errors";
+import type { MiddlewareFn } from "../types";
+import { AgentError } from "../core";
 import pc from "picocolors"; // Optional: for colored logging
 
 /**

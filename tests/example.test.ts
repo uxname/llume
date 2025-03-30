@@ -1,5 +1,5 @@
-import { describe, expect, test } from 'vitest';
-import { z } from 'zod';
+import { describe, expect, test } from "vitest";
+import { z } from "zod";
 
 // Импортируем основные компоненты из главного экспортного файла
 import {
@@ -9,7 +9,7 @@ import {
   Ai0Llm,
   // Типы ошибок для возможной проверки
   // AgentError, ValidationError, LlmError
-} from '../src';
+} from "../src";
 
 // Импортируем стандартные мидлвары (можно импортировать и из '../src' если они там экспортируются)
 import {
@@ -18,35 +18,35 @@ import {
   validationMiddleware,
   historyManagerMiddleware,
   stateChangeLoggerMiddleware,
-} from '../src/middleware'; // Убедитесь, что пути корректны
+} from "../src"; // Убедитесь, что пути корректны
 
 // Проверка наличия переменных окружения (Vitest должен их загрузить через dotenv/config)
 if (!process.env.AI0_URL || !process.env.AI0_API_KEY) {
   throw new Error(
-    'Не найдены переменные окружения AI0_URL или AI0_API_KEY, необходимые для тестов.',
+    "Не найдены переменные окружения AI0_URL или AI0_API_KEY, необходимые для тестов.",
   );
 }
 
-describe('Agent End-to-End Tests', () => {
-  test('should execute a simple function without tools', async () => {
+describe("Agent End-to-End Tests", () => {
+  test("should execute a simple function without tools", async () => {
     // 1. Определение схем и типов
     const inputSchema = z.object({
-      num1: z.number().describe('Первое число'),
-      num2: z.number().describe('Второе число'),
+      num1: z.number().describe("Первое число"),
+      num2: z.number().describe("Второе число"),
     });
     const outputSchema = z.object({
-      sum: z.number().describe('Сумма num1 и num2'),
+      sum: z.number().describe("Сумма num1 и num2"),
     });
     type Input = z.infer<typeof inputSchema>;
     type Output = z.infer<typeof outputSchema>;
 
     // 2. Определение AI Функции
     const adderPrompt = new PromptTemplate(
-      'Вычисли сумму {{num1}} и {{num2}}. Ответь только JSON объектом, содержащим результат в поле _data.sum.',
+      "Вычисли сумму {{num1}} и {{num2}}. Ответь только JSON объектом, содержащим результат в поле _data.sum.",
     );
     const simpleAdderDefinition = new AiFunctionDefinition({
-      name: 'SimpleAdder',
-      description: 'Складывает два числа из входных данных.',
+      name: "SimpleAdder",
+      description: "Складывает два числа из входных данных.",
       inputSchema: inputSchema,
       outputSchema: outputSchema,
       promptTemplate: adderPrompt,
@@ -75,10 +75,10 @@ describe('Agent End-to-End Tests', () => {
 
     // 7. Проверки (Assertions)
     expect(result).toBeDefined();
-    expect(result).toHaveProperty('sum');
+    expect(result).toHaveProperty("sum");
     expect(result.sum).toBe(42); // 15 + 27 = 42
 
-    console.log('Результат теста SimpleAdder:', result); // Опционально: вывести результат в консоль
+    console.log("Результат теста SimpleAdder:", result); // Опционально: вывести результат в консоль
   });
 
   // --- Сюда можно добавить другие тесты ---

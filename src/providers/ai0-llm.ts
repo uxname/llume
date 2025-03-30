@@ -1,7 +1,7 @@
 // src/providers/ai0-llm.ts
 import axios, { AxiosError } from "axios";
-import { LLMProvider } from "../components/llm-provider";
-import { LlmError } from "../core/errors";
+import { LLMProvider } from "../components";
+import { LlmError } from "../core";
 // Optional: for logging within the provider if needed
 // import pc from 'picocolors';
 

@@ -1,7 +1,7 @@
 // src/components/tool.ts
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import type { AgentContext } from "../core/agent-context"; // Core context for potential access
+import type { AgentContext } from "../core"; // Core context for potential access
 
 /**
  * Abstract base class for defining Tools that the Agent can use.
