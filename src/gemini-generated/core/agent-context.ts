@@ -4,7 +4,7 @@ import type { LLMProvider } from "../components"; // Placeholder
 import type { AiFunctionDefinition } from "../components"; // Placeholder
 import type { ToolDefinition } from "../components"; // Placeholder
 import type { LlmResponse } from "../schemas"; // Placeholder
-import { DefinitionNotFoundError } from "./errors"; // Import the error class
+import { DefinitionNotFoundError } from "./errors.ts"; // Import the error class
 
 /**
  * Represents the type of step being executed in the pipeline.

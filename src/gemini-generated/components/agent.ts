@@ -18,11 +18,11 @@ import {
   AgentError,
 } from "../core";
 import type { MiddlewareFn } from "../types";
-import type { LLMProvider } from "./llm-provider";
+import type { LLMProvider } from "./llm-provider.ts";
 // Import History as value
-import { History } from "./history";
-import type { AiFunctionDefinition } from "./ai-function";
-import type { ToolDefinition } from "./tool";
+import { History } from "./history.ts";
+import type { AiFunctionDefinition } from "./ai-function.ts";
+import type { ToolDefinition } from "./tool.ts";
 // Import the actual PromptBuilder class
 import { PromptBuilder } from "../prompts";
 // Import LlmResponse and FunctionVariables as types

@@ -1,6 +1,6 @@
 // src/core/agent-pipeline.ts
-import type { MiddlewareFn } from "../types/middleware";
-import type { AgentContext } from "./agent-context";
+import type { MiddlewareFn } from "../types/middleware.ts";
+import type { AgentContext } from "./agent-context.ts";
 
 /**
  * Represents the final handler function that executes the core logic

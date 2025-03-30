@@ -12,7 +12,7 @@ import {
   type LlmResponse,
   LlmResponseSchema, // Import the Zod schema for validation
 } from "../schemas"; // Assuming common schemas are here
-import { EXECUTE_FUNCTION_TEMPLATE } from "./templates/execute-function.template";
+import { EXECUTE_FUNCTION_TEMPLATE } from "./templates/execute-function.template.ts";
 
 /**
  * Variables expected by the EXECUTE_FUNCTION_TEMPLATE.
@@ -194,7 +194,7 @@ export class PromptBuilder {
         );
         return {
           _type: "error",
-          _message: `Parsed JSON does not match expected structure: ${validationResult.error.issues.map((iss) => iss.message).join(', ')}`,
+          _message: `Parsed JSON does not match expected structure: ${validationResult.error.issues.map((iss) => iss.message).join(", ")}`,
           _invalidData: parsedJson,
         };
       }
@@ -202,7 +202,6 @@ export class PromptBuilder {
       // If validation passes, return the data (which now definitely has a valid _type)
       // The specific _data validation happens later in the validationMiddleware
       return validationResult.data as LlmResponse<unknown>;
-
     } catch (error) {
       // Catch JSON.parse errors or other unexpected errors during processing
       console.error("Failed to parse LLM response:", rawResponse, error);

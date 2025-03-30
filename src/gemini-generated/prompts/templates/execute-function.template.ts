@@ -1,5 +1,5 @@
 // src/prompts/templates/execute-function.template.ts
-import { PromptTemplate } from "../prompt-template";
+import { PromptTemplate } from "../prompt-template.ts";
 
 /**
  * The main prompt template used by PromptBuilder to instruct the LLM

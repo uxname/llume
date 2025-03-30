@@ -9,7 +9,7 @@ import {
   Ai0Llm,
   // Типы ошибок для возможной проверки
   // AgentError, ValidationError, LlmError
-} from "../src";
+} from "../src/gemini-generated";
 
 // Импортируем стандартные мидлвары (можно импортировать и из '../src' если они там экспортируются)
 import {
@@ -18,7 +18,7 @@ import {
   validationMiddleware,
   historyManagerMiddleware,
   stateChangeLoggerMiddleware,
-} from "../src"; // Убедитесь, что пути корректны
+} from "../src/gemini-generated"; // Убедитесь, что пути корректны
 
 // Проверка наличия переменных окружения (Vitest должен их загрузить через dotenv/config)
 if (!process.env.AI0_URL || !process.env.AI0_API_KEY) {
