@@ -4,9 +4,10 @@ import { z } from "zod";
 import { LlmRequestCompiler } from "./llm-request-compiler.ts";
 import type { BaseTool } from "../../tool/base-tool.ts";
 import { Role } from "../types.ts";
+import { Ai0Llm } from "../../gemini-generated";
 
 describe("LlmRequestCompiler", () => {
-  test("should compile", () => {
+  test("should compile", async () => {
     const successDataSchema = z.object({
       randomString: z.string().describe("Random 3-4 word sentence"),
       randomNumber: z.number().describe("Random number from 1 to 100"),
@@ -54,6 +55,14 @@ describe("LlmRequestCompiler", () => {
     ];
 
     const compiledRequest = LlmRequestCompiler.compile(request);
-    console.log(compiledRequest);
+    console.log(
+      compiledRequest,
+      "\n------------------------------------------------",
+    );
+
+    const llm = new Ai0Llm(process.env.AI0_URL!, process.env.AI0_API_KEY!);
+
+    const response = await llm.execute(compiledRequest);
+    console.log(response);
   });
 });
