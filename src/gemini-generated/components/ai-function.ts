@@ -13,7 +13,7 @@ export class AiFunctionDefinition<
 > {
   /** A unique name for the AI function (e.g., "WeatherReporter", "CodeGenerator"). */
   public readonly name: string;
-  /** A brief description of what the AI function does. Used in prompts or documentation. */
+  /** A brief description of what the AI function does. Used in prompt or documentation. */
   public readonly description: string;
   /** The Zod schema defining the expected input structure for this function. */
   public readonly inputSchema: TInput;

@@ -1,4 +1,4 @@
-// src/prompts/templates/execute-function.template.ts
+// src/prompt/templates/execute-function.template.ts
 import { PromptTemplate } from "../prompt-template.ts";
 
 /**

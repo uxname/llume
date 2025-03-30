@@ -1,4 +1,4 @@
-// src/prompts/index.ts
+// src/prompt/index.ts
 
 export * from "./prompt-template.ts";
 export * from "./prompt-builder.ts";

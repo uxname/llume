@@ -1,4 +1,4 @@
-// src/prompts/prompt-template.ts
+// src/prompt/prompt-template.ts
 // Reusing the existing, well-functioning PromptTemplate class.
 
 // Define a type for variables used in templates for clarity

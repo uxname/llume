@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { PromptHelper } from "../src/prompts/prompt-helper.ts";
+import { PromptHelper } from "../src/prompt/prompt-helper.ts";
 import * as path from "node:path";
 
 describe("Prompts", () => {
@@ -7,7 +7,7 @@ describe("Prompts", () => {
     const systemPromptDir = path.join(
       process.cwd(),
       "src",
-      "prompts",
+      "prompt",
       "prompt-templates",
     );
 

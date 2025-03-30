@@ -1,4 +1,4 @@
-// src/prompts/prompt-builder.ts
+// src/prompt/prompt-builder.ts
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type { AgentContext } from "../core";
@@ -58,7 +58,7 @@ export class PromptBuilder {
         definitionPath: "schemas", // Optional: Namespace definitions
         errorMessages: true, // Include descriptions from Zod .describe()
       });
-      return JSON.stringify(jsonSchema, null, 2); // Pretty-print for readability in logs/prompts
+      return JSON.stringify(jsonSchema, null, 2); // Pretty-print for readability in logs/prompt
     } catch (error) {
       console.error(
         `Error generating JSON schema for function ${aiFunction.name}:`,

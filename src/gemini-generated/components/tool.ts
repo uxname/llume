@@ -14,13 +14,13 @@ export abstract class ToolDefinition<
 > {
   /** A unique name for the tool (e.g., "GetWeather", "DatabaseQuery"). Should be suitable for LLM calls. */
   public abstract readonly name: string;
-  /** A description of the tool's purpose and capabilities. Used in prompts for the LLM. */
+  /** A description of the tool's purpose and capabilities. Used in prompt for the LLM. */
   public abstract readonly description: string;
   /** The Zod schema defining the expected input structure for this tool. */
   public abstract readonly inputSchema: TInput;
   /**
    * The Zod schema defining the expected structure of the *successful* output returned by the `execute` method.
-   * Used for documentation in prompts and potentially for validation after execution (e.g., in a middleware).
+   * Used for documentation in prompt and potentially for validation after execution (e.g., in a middleware).
    */
   public abstract readonly outputSchema: z.ZodSchema<TOutput>;
 
@@ -40,7 +40,7 @@ export abstract class ToolDefinition<
   /**
    * Generates a JSON string representation of the tool's definition,
    * including name, description, and input/output schemas in JSON Schema format.
-   * Useful for including in LLM prompts.
+   * Useful for including in LLM prompt.
    * @returns A JSON string describing the tool.
    */
   public toString(): string {
