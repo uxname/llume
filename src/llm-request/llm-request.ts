@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { z } from "zod";
-import { BaseTool } from "../tool/base-tool.ts";
-import type { ToolCallResult } from "../tool/types.ts";
-import type { Message } from "./types.ts";
+import { BaseTool } from "../tool/base-tool";
+import type { ToolCallResult } from "../tool/types";
+import type { Message } from "./types";
 
 export class LlmRequest {
   constructor(

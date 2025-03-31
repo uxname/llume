@@ -1,5 +1,5 @@
-import type { LlmRequest } from "../llm-request/llm-request.ts";
-import type { LlmResponse } from "../llm-response/types.ts";
+import type { LlmRequest } from "../llm-request/llm-request";
+import type { LlmResponse } from "../llm-response/types";
 
 export enum RequestTarget {
   LLM = "llm",

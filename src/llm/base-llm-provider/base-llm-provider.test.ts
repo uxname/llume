@@ -1,11 +1,11 @@
 import { describe, test, expect } from "vitest";
-import { LLMProvider } from "../../gemini-generated";
+import { BaseLlmProvider } from "./base-llm-provider";
 
 describe("Base LLM Provider", () => {
   describe("Should response", () => {
-    class MockLlmProvider extends LLMProvider {
+    class MockLlmProvider extends BaseLlmProvider {
       public name = "MockLlmProvider";
-      public async execute(prompt: string): Promise<string> {
+      public async executeRaw(prompt: string): Promise<string> {
         return "Mock response, request: " + prompt;
       }
     }

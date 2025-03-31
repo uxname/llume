@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { Ai0LlmProvider } from "./ai0-llm-provider.ts";
+import { Ai0LlmProvider } from "./ai0-llm-provider";
 
 describe("AI0 LLM Provider", () => {
   describe("Should response", () => {

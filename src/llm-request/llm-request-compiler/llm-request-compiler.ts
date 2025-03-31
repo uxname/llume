@@ -1,7 +1,7 @@
-import type { LlmRequest } from "../llm-request.ts";
-import { PromptHelper } from "../../prompt/prompt-helper.ts";
+import type { LlmRequest } from "../llm-request";
+import { PromptHelper } from "../../prompt/prompt-helper";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { LlmResponseSchema } from "../../llm-response/schemas.ts";
+import { LlmResponseSchema } from "../../llm-response/schemas";
 
 export class LlmRequestCompiler {
   static compile(request: LlmRequest): string {

@@ -1,4 +1,4 @@
-import { LlmHelper } from "../llm-helper/llm-helper.ts";
+import { LlmHelper } from "../llm-helper/llm-helper";
 
 export abstract class BaseLlmProvider {
   public abstract readonly name: string;

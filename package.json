@@ -1,6 +1,13 @@
 {
-  "name": "ai0-agent",
+  "name": "llume-js",
+  "version": "0.1.0",
+  "description": "AI agent framework for executing tasks with LLMs and tools",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "commonjs",
+  "keywords": ["ai", "agent", "llm", "tools"],
+  "author": "uxname <uxname@gmail.com>",
+  "license": "MIT",
   "scripts": {
     "start": "bun run src/main.ts",
     "test": "vitest run --config vitest.config.ts",
@@ -8,7 +15,9 @@
     "ts:check": "bunx tsc --noEmit",
     "check": "bun run ts:check && bun run lint",
     "lint": "bunx eslint",
-    "lint:fix": "bun run lint --fix"
+    "lint:fix": "bun run lint --fix",
+    "build": "bunx tsc -p tsconfig.build.json",
+    "prepublishOnly": "bun run build"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",
@@ -22,7 +31,7 @@
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
-  "private": true,
+  "private": false,
   "dependencies": {
     "axios": "^1.8.3",
     "dotenv": "^16.4.7",
@@ -33,5 +42,10 @@
     "prettier": "^3.5.3",
     "zod": "^3.24.2",
     "zod-to-json-schema": "^3.24.4"
-  }
+  },
+  "files": [
+    "dist/**/*",
+    "ideas.md",
+    "LICENSE"
+  ]
 }

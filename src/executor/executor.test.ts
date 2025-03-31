@@ -1,11 +1,11 @@
 import { describe, test } from "vitest";
 import { z } from "zod";
-import type { BaseTool } from "../tool/base-tool.ts";
-import { LlmRequest } from "../llm-request/llm-request.ts";
-import { Role } from "../llm-request/types.ts";
-import { Ai0Llm } from "../gemini-generated";
-import { Executor } from "./executor.ts";
-import { Pipeline } from "./pipeline.ts";
+import type { BaseTool } from "../tool/base-tool";
+import { LlmRequest } from "../llm-request/llm-request";
+import { Role } from "../llm-request/types";
+import { Executor } from "./executor";
+import { Pipeline } from "./pipeline";
+import { Ai0LlmProvider } from "../llm/providers/ai0/ai0-llm-provider";
 
 describe("Executor", () => {
   test("should execute", async () => {
@@ -52,7 +52,10 @@ describe("Executor", () => {
       randomString: "Hello world, this is a random string",
     };
 
-    const llm = new Ai0Llm(process.env.AI0_URL!, process.env.AI0_API_KEY!);
+    const llm = new Ai0LlmProvider(
+      process.env.AI0_URL!,
+      process.env.AI0_API_KEY!,
+    );
 
     const executor = new Executor(llm);
     const pipeline = new Pipeline(request);

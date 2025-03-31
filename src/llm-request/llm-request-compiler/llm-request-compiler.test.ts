@@ -1,10 +1,10 @@
 import { describe, test } from "vitest";
-import { LlmRequest } from "../llm-request.ts";
+import { LlmRequest } from "../llm-request";
 import { z } from "zod";
-import { LlmRequestCompiler } from "./llm-request-compiler.ts";
-import type { BaseTool } from "../../tool/base-tool.ts";
-import { Role } from "../types.ts";
-import { Ai0Llm } from "../../gemini-generated";
+import { LlmRequestCompiler } from "./llm-request-compiler";
+import type { BaseTool } from "../../tool/base-tool";
+import { Role } from "../types";
+import { Ai0LlmProvider } from "../../llm/providers/ai0/ai0-llm-provider";
 
 describe("LlmRequestCompiler", () => {
   test("should compile", async () => {
@@ -69,7 +69,10 @@ describe("LlmRequestCompiler", () => {
       "\n------------------------------------------------",
     );
 
-    const llm = new Ai0Llm(process.env.AI0_URL!, process.env.AI0_API_KEY!);
+    const llm = new Ai0LlmProvider(
+      process.env.AI0_URL!,
+      process.env.AI0_API_KEY!,
+    );
 
     const response = await llm.execute(compiledRequest);
     console.log(response);
