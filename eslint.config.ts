@@ -18,4 +18,7 @@ export default defineConfig([
   // @ts-expect-error not important
   tseslint.configs.recommended,
   eslintPluginPrettierRecommended,
+  {
+    ignores: ["dist/**/*"],
+  },
 ]);

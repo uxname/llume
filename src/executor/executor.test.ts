@@ -38,9 +38,12 @@ describe("Executor", () => {
 
     const randomNumberGeneratorTool = new RandomNumberGeneratorTool();
 
-    const request = new LlmRequest("Generate random data", successDataSchema, [
-      randomNumberGeneratorTool,
-    ]);
+    const request = new LlmRequest({
+      query: "Generate random data",
+      variables: {},
+      successResponseSchema: successDataSchema,
+      tools: [randomNumberGeneratorTool],
+    });
 
     request.history.push({
       role: Role.USER,

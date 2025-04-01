@@ -4,7 +4,7 @@
       "ESNext"
     ],
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "declaration": true,
     "declarationDir": "dist",
     "target": "ESNext",

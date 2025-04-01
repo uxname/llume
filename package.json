@@ -16,6 +16,7 @@
     "check": "bun run ts:check && bun run lint",
     "lint": "bunx eslint .",
     "lint:fix": "bun run lint --fix",
+    "prebuild": "bun run check",
     "build": "bunx tsc -p tsconfig.build.json && bunx copyfiles -u 1 \"src/prompt/prompt-templates/**/*.hbs\" dist",
     "prepublishOnly": "bun run build && npm pack --dry-run"
   },

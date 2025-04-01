@@ -19,7 +19,7 @@ export class LlmRequestCompiler {
     );
 
     return PromptHelper.compile(prompt, {
-      userQuery: request.userQuery,
+      userQuery: request.query,
       responseSchema: JSON.stringify(zodToJsonSchema(responseSchema)),
       tools: tools?.join("\n"),
       state: JSON.stringify(request.state),

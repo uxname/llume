@@ -36,7 +36,7 @@ export class Executor {
 
     pipeline.addExecution(
       RequestTarget.LLM,
-      pipeline.llmRequest.userQuery,
+      pipeline.llmRequest.query,
       response,
     );
 
