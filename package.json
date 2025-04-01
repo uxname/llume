@@ -45,7 +45,7 @@
   },
   "files": [
     "dist/**/*",
-    "ideas.md",
+    "README.md",
     "LICENSE"
   ]
 }
