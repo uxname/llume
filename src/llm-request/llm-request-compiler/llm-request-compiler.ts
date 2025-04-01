@@ -18,8 +18,13 @@ export class LlmRequestCompiler {
       }),
     );
 
+    const compiledQuery = PromptHelper.compile(
+      request.query,
+      request.variables,
+    );
+
     return PromptHelper.compile(prompt, {
-      userQuery: request.query,
+      userQuery: compiledQuery,
       responseSchema: JSON.stringify(zodToJsonSchema(responseSchema)),
       tools: tools?.join("\n"),
       state: JSON.stringify(request.state),
