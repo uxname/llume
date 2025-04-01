@@ -1,6 +1,6 @@
 {
   "name": "llume",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "AI agent framework for executing tasks with LLMs and tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,7 +17,7 @@
     "lint": "bunx eslint",
     "lint:fix": "bun run lint --fix",
     "build": "bunx tsc -p tsconfig.build.json",
-    "prepublishOnly": "bun run build"
+    "prepublishOnly": "bun run build && npm pack --dry-run"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",
@@ -29,12 +29,12 @@
     "vitest": "^3.0.9"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "dotenv": "^16.4.7"
   },
   "private": false,
   "dependencies": {
     "axios": "^1.8.3",
-    "dotenv": "^16.4.7",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.3",
     "handlebars": "^4.7.8",
