@@ -1,6 +1,9 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext", "DOM"],
+    "lib": [
+      "ESNext",
+      "DOM"
+    ],
     "target": "ESNext",
     "esModuleInterop": true,
     "module": "CommonJS",
@@ -14,9 +17,15 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
-    "jsx": "react-jsx", // Оставьте, если используете JSX
-    "allowJs": true // Если в проекте есть .js файлы
+    "jsx": "react-jsx",
+    "allowJs": true
   },
-  "include": ["index.ts", "src/**/*"], // Какие файлы компилировать
-  "exclude": ["node_modules", "dist", "tests"] // Исключить ненужное
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests"
+  ]
 }
