@@ -1,8 +1,7 @@
 {
   "compilerOptions": {
     "lib": [
-      "ESNext",
-      "DOM"
+      "ESNext"
     ],
     "outDir": "dist",
     "rootDir": "src",
@@ -10,8 +9,8 @@
     "declarationDir": "dist",
     "target": "ESNext",
     "esModuleInterop": true,
-    "module": "CommonJS",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "noEmit": false,
     "strict": true,
     "skipLibCheck": true,
@@ -19,7 +18,6 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
-    "jsx": "react-jsx",
     "allowJs": true
   },
   "include": [

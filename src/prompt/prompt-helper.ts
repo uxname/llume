@@ -1,10 +1,6 @@
 import fs from "fs";
 import * as handlebars from "handlebars";
 import * as path from "node:path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export class PromptHelper {
   static loadTemplate(templatePath: string): string {
@@ -15,16 +11,13 @@ export class PromptHelper {
   }
 
   static loadSystemPrompt(): string {
-    const systemPromptDir = path.join(
-      __dirname,
-      "..",
-      "prompt",
-      "prompt-templates",
-    );
+    const systemPromptDir = path.join(__dirname, "prompt-templates");
     const templatePath = path.join(systemPromptDir, "prompt.hbs");
 
     if (!fs.existsSync(templatePath)) {
-      throw new Error(`System prompt template not found: ${templatePath}`);
+      throw new Error(
+        `System prompt template not found at resolved path: ${templatePath}. (__dirname was: ${__dirname})`,
+      );
     }
 
     return this.loadTemplate(templatePath);
