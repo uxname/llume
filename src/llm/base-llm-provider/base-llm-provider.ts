@@ -18,7 +18,7 @@ export abstract class BaseLlmProvider {
 
     const rawResponse = await this.executeRaw(preparedPrompt);
 
-    const sanitizedResponse = LlmHelper.sanitizeLLMTextResponse(rawResponse);
+    const sanitizedResponse = LlmHelper.sanitizeLLMJsonResponse(rawResponse);
 
     return this.finalizeResponse(sanitizedResponse);
   }

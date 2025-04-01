@@ -27,10 +27,6 @@ export class LlmHelper {
     return "";
   }
 
-  static sanitizeLLMTextResponse(response: string): string {
-    return response.trim();
-  }
-
   private static extractJsonBlock(response: string): string | null {
     const match = response.match(/```(?:json|JSON)\s*([\s\S]*?)\s*```/);
     return match?.[1]?.trim() || null;
