@@ -1,11 +1,8 @@
-import {
-  LlmRequest,
-  type LlmRequestParams,
-} from "./llm-request/llm-request.ts";
-import type { BaseLlmProvider } from "./llm/base-llm-provider/base-llm-provider.ts";
+import { LlmRequest, type LlmRequestParams } from "./llm-request/llm-request";
+import type { BaseLlmProvider } from "./llm/base-llm-provider/base-llm-provider";
 import { z } from "zod";
-import { Pipeline } from "./executor/pipeline.ts";
-import { Executor } from "./executor/executor.ts";
+import { Pipeline } from "./executor/pipeline";
+import { Executor } from "./executor/executor";
 
 export abstract class AiFunction {
   abstract readonly requestParams: LlmRequestParams;
