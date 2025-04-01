@@ -1,20 +1,6 @@
-# ai0-agent
-
-To install dependencies:
-
-```bash
-bun install
-```
-
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.2.2. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
-
 # Ideas
+
+Сделать чтобы в LlmRequest передавался промпт не чисто строкой, а handlebars шаблоном и переменными
 
 ## 1. Роутер
 
