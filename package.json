@@ -1,6 +1,6 @@
 {
   "name": "llume",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "AI agent framework for executing tasks with LLMs and tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,22 +16,23 @@
     "check": "bun run ts:check && bun run lint",
     "lint": "bunx eslint .",
     "lint:fix": "bun run lint --fix",
-    "build": "bunx tsc -p tsconfig.build.json",
+    "build": "bunx tsc -p tsconfig.build.json && bunx copyfiles -u 1 \"src/prompt/prompt-templates/**/*.hbs\" dist",
     "prepublishOnly": "bun run build && npm pack --dry-run"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",
     "@types/bun": "latest",
-    "eslint": "^9.23.0",
-    "globals": "^16.0.0",
-    "jiti": "^2.4.2",
-    "typescript-eslint": "^8.27.0",
-    "vitest": "^3.0.9",
+    "copyfiles": "^2.4.1",
     "dotenv": "^16.4.7",
+    "eslint": "^9.23.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.3",
+    "globals": "^16.0.0",
+    "jiti": "^2.4.2",
     "prettier": "^3.5.3",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "typescript-eslint": "^8.27.0",
+    "vitest": "^3.0.9"
   },
   "peerDependencies": {},
   "private": false,
