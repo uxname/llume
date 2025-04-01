@@ -4,7 +4,7 @@ import { BaseTool } from "../tool/base-tool";
 import type { ToolCallResult } from "../tool/types";
 import type { Message } from "./types";
 
-interface LlmRequestParams {
+export interface LlmRequestParams {
   query: string;
   variables: Record<string, string>;
   successResponseSchema: z.ZodType;
