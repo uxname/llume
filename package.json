@@ -1,6 +1,6 @@
 {
   "name": "llume",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "AI agent framework for executing tasks with LLMs and tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -44,6 +44,10 @@
     "picocolors": "^1.1.1",
     "zod": "^3.24.2",
     "zod-to-json-schema": "^3.24.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uxname/llume.git"
   },
   "files": [
     "dist/**/*",
