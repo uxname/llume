@@ -4,33 +4,39 @@ import { z } from "zod";
 import { Pipeline } from "./executor/pipeline";
 import { Executor } from "./executor/executor";
 
-export abstract class AiFunction {
-  abstract readonly requestParams: LlmRequestParams;
-  abstract readonly llmProvider: BaseLlmProvider;
+type Variables = Record<string, string>;
 
-  async execute<
-    T = z.infer<typeof this.requestParams.successResponseSchema>,
-  >(): Promise<T> {
-    const request = new LlmRequest(this.requestParams);
-    const executor = new Executor(this.llmProvider);
+interface AiFunctionParams {
+  query: string;
+  successResponseSchema: z.ZodType;
+  llmProvider: BaseLlmProvider;
+}
+
+export abstract class AiFunction {
+  protected abstract readonly requestParams: Omit<
+    LlmRequestParams,
+    "variables"
+  >;
+  protected abstract readonly llmProvider: BaseLlmProvider;
+
+  async execute<T = z.infer<typeof this.requestParams.successResponseSchema>>(
+    variables: Variables = {},
+  ): Promise<T> {
+    const request = new LlmRequest({
+      ...this.requestParams,
+      variables,
+    });
+
     const pipeline = new Pipeline(request);
-    return await executor.execute<
-      z.infer<typeof this.requestParams.successResponseSchema>
-    >(pipeline);
+    const executor = new Executor(this.llmProvider);
+
+    return executor.execute<T>(pipeline);
   }
 
-  public static new(
-    requestParams: LlmRequestParams,
-    llmProvider: BaseLlmProvider,
-  ): AiFunction {
-    const aiFunction = new (class extends AiFunction {
-      readonly requestParams = requestParams;
-      readonly llmProvider = llmProvider;
+  static create(data: AiFunctionParams): AiFunction {
+    return new (class extends AiFunction {
+      protected readonly requestParams = data;
+      protected readonly llmProvider = data.llmProvider;
     })();
-
-    return {
-      ...aiFunction,
-      execute: aiFunction.execute.bind(aiFunction),
-    };
   }
 }
