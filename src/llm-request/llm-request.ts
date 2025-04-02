@@ -7,7 +7,7 @@ import type { Message } from "./types";
 export interface LlmRequestParams {
   query: string;
   variables: Record<string, string>;
-  successResponseSchema: z.ZodType;
+  schema: z.ZodType;
   tools?: BaseTool[];
   state?: any;
   history?: Message[];
@@ -30,7 +30,7 @@ export class LlmRequest {
       data.toolsCallHistory === undefined ? [] : data.toolsCallHistory;
     this.query = data.query;
     this.variables = data.variables;
-    this.successResponseSchema = data.successResponseSchema;
+    this.successResponseSchema = data.schema;
     this.tools = tools;
     this.state = data.state;
     this.history = history;

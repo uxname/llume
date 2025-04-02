@@ -39,7 +39,7 @@ describe("LlmRequestCompiler", () => {
     const request = new LlmRequest({
       query: "Generate random data",
       variables: {},
-      successResponseSchema: successDataSchema,
+      schema: successDataSchema,
       tools: [randomNumberGeneratorTool],
     });
 
