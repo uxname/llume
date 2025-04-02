@@ -18,4 +18,19 @@ export abstract class AiFunction {
       z.infer<typeof this.requestParams.successResponseSchema>
     >(pipeline);
   }
+
+  public static new(
+    requestParams: LlmRequestParams,
+    llmProvider: BaseLlmProvider,
+  ): AiFunction {
+    const aiFunction = new (class extends AiFunction {
+      readonly requestParams = requestParams;
+      readonly llmProvider = llmProvider;
+    })();
+
+    return {
+      ...aiFunction,
+      execute: aiFunction.execute.bind(aiFunction),
+    };
+  }
 }
