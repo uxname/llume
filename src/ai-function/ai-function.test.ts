@@ -1,7 +1,7 @@
 import { describe, test } from "vitest";
 import { z } from "zod";
 import { Ai0LlmProvider } from "../llm/providers/ai0/ai0-llm-provider";
-import { AiFunction } from "./ai-function.ts";
+import { AiFunction } from "./ai-function";
 
 describe("AI Function", () => {
   test("should execute", async () => {
