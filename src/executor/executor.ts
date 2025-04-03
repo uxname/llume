@@ -32,7 +32,16 @@ export class Executor {
 
     const prompt = LlmRequestCompiler.compile(pipeline.llmRequest);
     const rawResponse = await this.llm.execute(prompt);
-    const response: LlmResponse<TData> = JSON.parse(rawResponse);
+    let response: LlmResponse<TData>;
+
+    try {
+      response = JSON.parse(rawResponse);
+    } catch (_error) {
+      const error = _error as Error;
+      throw new Error(
+        `Failed to parse LLM response: ${error.message}. Raw response: ${rawResponse}`,
+      );
+    }
 
     pipeline.addExecution(
       RequestTarget.LLM,
