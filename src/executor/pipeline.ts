@@ -33,15 +33,6 @@ export class Pipeline {
     response: LlmResponse,
     toolName?: string,
   ) {
-    console.log(
-      `[Pipeline] addExecution:`,
-      JSON.stringify({
-        requestType,
-        input,
-        response,
-        toolName,
-      }),
-    );
     this.executions.push({
       executionDate: new Date(),
       requestTarget: requestType,
