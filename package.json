@@ -1,57 +1,47 @@
 {
-  "name": "llume",
-  "version": "0.1.15",
-  "description": "AI agent framework for executing tasks with LLMs and tools",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "type": "commonjs",
-  "keywords": ["ai", "agent", "llm", "tools", "llume"],
-  "author": "uxname <uxname@gmail.com>",
-  "license": "MIT",
-  "scripts": {
-    "start": "bun run src/main.ts",
-    "test": "vitest run --config vitest.config.ts",
-    "test:watch": "vitest watch --config vitest.config.ts",
-    "ts:check": "bunx tsc --noEmit",
-    "check": "bun run ts:check && bun run lint",
-    "lint": "bunx eslint .",
-    "lint:fix": "bun run lint --fix",
-    "prebuild": "bun run check && bunx rimraf dist",
-    "build": "bunx tsc -p tsconfig.build.json && bunx copyfiles \"src/prompt/prompt-templates/**/*.hbs\" dist",
-    "prepublishOnly": "bun run build && npm pack --dry-run"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.23.0",
-    "@types/bun": "latest",
-    "copyfiles": "^2.4.1",
-    "dotenv": "^16.4.7",
-    "eslint": "^9.23.0",
-    "eslint-config-prettier": "^10.1.1",
-    "eslint-plugin-prettier": "^5.2.3",
-    "globals": "^16.0.0",
-    "jiti": "^2.4.2",
-    "prettier": "^3.5.3",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.0.0",
-    "typescript-eslint": "^8.27.0",
-    "vitest": "^3.0.9"
-  },
-  "peerDependencies": {},
-  "private": false,
-  "dependencies": {
-    "axios": "^1.8.3",
-    "handlebars": "^4.7.8",
-    "picocolors": "^1.1.1",
-    "zod": "^3.24.2",
-    "zod-to-json-schema": "^3.24.4"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/uxname/llume.git"
-  },
-  "files": [
-    "dist/**/*",
-    "README.md",
-    "LICENSE"
-  ]
+	"name": "llume",
+	"version": "0.1.16",
+	"description": "AI agent framework for executing tasks with LLMs and tools",
+	"main": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"type": "commonjs",
+	"keywords": ["ai", "agent", "llm", "tools", "llume"],
+	"author": "uxname <uxname@gmail.com>",
+	"license": "MIT",
+	"scripts": {
+		"start": "bun run src/main.ts",
+		"test": "vitest run --config vitest.config.ts",
+		"test:watch": "vitest watch --config vitest.config.ts",
+		"ts:check": "bunx tsc --noEmit",
+		"check": "bun run ts:check && bun run lint",
+		"lint": "bunx biome check .",
+		"lint:fix": "bunx biome check --write .",
+		"prebuild": "bun run check && bunx rimraf dist",
+		"build": "bunx tsc -p tsconfig.build.json && bunx copyfiles \"src/prompt/prompt-templates/**/*.hbs\" dist",
+		"prepublishOnly": "bun run build && npm pack --dry-run"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@types/bun": "latest",
+		"copyfiles": "^2.4.1",
+		"dotenv": "^16.4.7",
+		"jiti": "^2.4.2",
+		"rimraf": "^6.0.1",
+		"typescript": "^5.0.0",
+		"vitest": "^3.0.9"
+	},
+	"peerDependencies": {},
+	"private": false,
+	"dependencies": {
+		"axios": "^1.8.3",
+		"handlebars": "^4.7.8",
+		"picocolors": "^1.1.1",
+		"zod": "^3.24.2",
+		"zod-to-json-schema": "^3.24.4"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/uxname/llume.git"
+	},
+	"files": ["dist/**/*", "README.md", "LICENSE"]
 }

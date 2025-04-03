@@ -1,10 +1,10 @@
 export enum Role {
-  USER = "user",
-  ASSISTANT = "assistant",
-  SYSTEM = "system",
+	USER = "user",
+	ASSISTANT = "assistant",
+	SYSTEM = "system",
 }
 
 export interface Message {
-  role: Role;
-  content: string;
+	role: Role;
+	content: string;
 }
