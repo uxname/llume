@@ -24,7 +24,9 @@ export class LlmHelper {
       if (result) return result;
     }
 
-    return "";
+    throw new Error(
+      `Failed to extract JSON from LLM response. Raw response: ${response}`,
+    );
   }
 
   private static extractJsonBlock(response: string): string | null {
