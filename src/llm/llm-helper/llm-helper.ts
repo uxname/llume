@@ -11,7 +11,7 @@ export class LlmHelper {
    * @returns Extracted JSON string (not guaranteed to be valid) or empty string
    */
   static sanitizeLLMJsonResponse(response: string): string {
-    if (!response.trim()) return "";
+    if (!response.trim()) throw new Error("Empty response");
 
     const strategies: Array<() => string | null> = [
       () => this.extractJsonBlock(response),
@@ -28,11 +28,13 @@ export class LlmHelper {
   }
 
   private static extractJsonBlock(response: string): string | null {
+    // Look for ```json ... ```
     const match = response.match(/```(?:json|JSON)\s*([\s\S]*?)\s*```/);
     return match?.[1]?.trim() || null;
   }
 
   private static extractGenericCodeBlock(response: string): string | null {
+    // Look for ``` ... ```
     const match = response.match(/```\s*([\s\S]*?)\s*```/);
     if (!match) return null;
 
@@ -41,6 +43,7 @@ export class LlmHelper {
   }
 
   private static extractByBraceBounds(response: string): string | null {
+    // Look for first/last brace
     const starts = this.findStartIndices(response);
     if (!starts.length) return null;
 
@@ -67,6 +70,7 @@ export class LlmHelper {
   }
 
   private static findStartIndices(text: string): number[] {
+    // Look for first/last brace
     return [text.indexOf("{"), text.indexOf("[")].filter((idx) => idx !== -1);
   }
 }

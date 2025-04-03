@@ -39,7 +39,7 @@ export class Executor {
     } catch (_error) {
       const error = _error as Error;
       throw new Error(
-        `Failed to parse LLM response: ${error.message}. Raw response: ${rawResponse}`,
+        `Failed to parse LLM response: ${error.message}. Request: "${prompt}". Raw response: "${rawResponse}"`,
       );
     }
 

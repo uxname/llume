@@ -1,6 +1,6 @@
 {
   "name": "llume",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "AI agent framework for executing tasks with LLMs and tools",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
