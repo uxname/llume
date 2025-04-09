@@ -19,14 +19,13 @@ describe("General tests", () => {
 		}
 
 		const CalculatorInputSchema = z.object({
-			num1: z.number().describe("Первое число для умножения"),
-			num2: z.number().describe("Второе число для умножения"),
+			expression: z.string(),
 		});
 		// Выводим тип из схемы
 		type CalculatorInput = z.infer<typeof CalculatorInputSchema>;
 
 		const CalculatorOutputSchema = z.object({
-			result: z.number().describe("Результат умножения num1 на num2"),
+			result: z.number().describe("Результат вычисления"),
 		});
 		// Выводим тип из схемы
 		type CalculatorOutput = z.infer<typeof CalculatorOutputSchema>;
@@ -35,15 +34,13 @@ describe("General tests", () => {
 			CalculatorInput,
 			CalculatorOutput
 		> = {
-			functionId: "multiply-calculator", // ID для логов/событий
+			functionId: "calculator", // ID для логов/событий
 			inputSchema: CalculatorInputSchema,
 			outputSchema: CalculatorOutputSchema,
 			// Простой промпт. Инструкции по формату JSON добавятся автоматически.
-			promptTemplate:
-				"Посчитай произведение двух чисел: {{{num1}}} и {{{num2}}}.",
-			// systemPrompt: "Ты - калькулятор. Твоя задача - умножать числа.", // Можно добавить системный промпт
+			promptTemplate: "Посчитай следующее выражение: {{{expression}}}",
 			// outputParser: не указан, используется дефолтный JSON
-			retryOptions: { maxAttempts: 2, delayMs: 50 }, // Попробуем 2 раза максимум
+			retryOptions: { maxAttempts: 3, delayMs: 200 }, // Попробуем 2 раза максимум
 		};
 
 		const executionContext: ExecutionContext = {
@@ -59,8 +56,7 @@ describe("General tests", () => {
 		console.log("\n--- Running AI Calculator Example ---");
 
 		const result = await multiplyAiFunction({
-			num1: 2,
-			num2: 3,
+			expression: "2+2",
 		});
 
 		console.log(`Result: ${result.result.toString()}`);
