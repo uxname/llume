@@ -1,5 +1,6 @@
 # Ideas
 
+- !!! Сделать чтобы системный промпт не добавлялся в начало, а оборачивал юзерский промпт с помощью handlebars шаблонов
 - Response cache
 - Logging RAW requests and responses
 - Global context для AI функций (чтобы например можно было указывать язык и т.д.)
