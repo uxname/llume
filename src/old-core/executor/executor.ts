@@ -1,13 +1,13 @@
-import { LlmRequestCompiler } from "../llm-request/llm-request-compiler/llm-request-compiler";
+import { LlmRequestCompiler } from "../llm-request/llm-request-compiler/llm-request-compiler.ts";
 import {
 	type CallToolResponse,
 	type ErrorResponse,
 	LLMResponseTypes,
 	type LlmResponse,
 	type SuccessResponse,
-} from "../llm-response/types";
-import type { BaseLlmProvider } from "../llm/base-llm-provider/base-llm-provider";
-import { type Pipeline, RequestTarget } from "./pipeline";
+} from "../llm-response/types.ts";
+import type { BaseLlmProvider } from "../llm/base-llm-provider/base-llm-provider.ts";
+import { type Pipeline, RequestTarget } from "./pipeline.ts";
 
 export class Executor {
 	constructor(public readonly llm: BaseLlmProvider) {}

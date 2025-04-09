@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { describe, expect, test } from "vitest";
-import { PromptHelper } from "../src/prompt/prompt-helper.ts";
+import { PromptHelper } from "../src/old-core/prompt/prompt-helper.ts";
 
 describe("Prompts", () => {
 	test("should compile", async () => {

@@ -1,8 +1,11 @@
 import type { z } from "zod";
-import { Executor } from "../executor/executor";
-import { Pipeline } from "../executor/pipeline";
-import { LlmRequest, type LlmRequestParams } from "../llm-request/llm-request";
-import type { BaseLlmProvider } from "../llm/base-llm-provider/base-llm-provider";
+import { Executor } from "../executor/executor.ts";
+import { Pipeline } from "../executor/pipeline.ts";
+import {
+	LlmRequest,
+	type LlmRequestParams,
+} from "../llm-request/llm-request.ts";
+import type { BaseLlmProvider } from "../llm/base-llm-provider/base-llm-provider.ts";
 
 type Variables = Record<string, string>;
 

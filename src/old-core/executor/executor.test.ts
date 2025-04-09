@@ -1,11 +1,11 @@
 import { describe, test } from "vitest";
 import { z } from "zod";
-import { LlmRequest } from "../llm-request/llm-request";
-import { Role } from "../llm-request/types";
-import { Ai0LlmProvider } from "../llm/providers/ai0/ai0-llm-provider";
-import type { BaseTool } from "../tool/base-tool";
-import { Executor } from "./executor";
-import { Pipeline } from "./pipeline";
+import { LlmRequest } from "../llm-request/llm-request.ts";
+import { Role } from "../llm-request/types.ts";
+import { Ai0LlmProvider } from "../llm/providers/ai0/ai0-llm-provider.ts";
+import type { BaseTool } from "../tool/base-tool.ts";
+import { Executor } from "./executor.ts";
+import { Pipeline } from "./pipeline.ts";
 
 describe("Executor", () => {
 	test("should execute", async () => {

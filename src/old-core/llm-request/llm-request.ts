@@ -1,7 +1,7 @@
 import type { z } from "zod";
-import type { BaseTool } from "../tool/base-tool";
-import type { ToolCallResult } from "../tool/types";
-import type { Message } from "./types";
+import type { BaseTool } from "../tool/base-tool.ts";
+import type { ToolCallResult } from "../tool/types.ts";
+import type { Message } from "./types.ts";
 
 export interface LlmRequestParams {
 	query: string;

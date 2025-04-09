@@ -17,7 +17,7 @@
 		"lint": "bunx biome check .",
 		"lint:fix": "bunx biome check --write .",
 		"prebuild": "bun run check && bunx rimraf dist",
-		"build": "bunx tsc -p tsconfig.build.json && bunx copyfiles \"src/prompt/prompt-templates/**/*.hbs\" dist",
+		"build": "bunx tsc -p tsconfig.build.json && bunx copyfiles \"src/old-core/prompt/prompt-templates/**/*.hbs\" dist",
 		"prepublishOnly": "bun run build && npm pack --dry-run"
 	},
 	"devDependencies": {

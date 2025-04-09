@@ -1,10 +1,10 @@
 import { describe, test } from "vitest";
 import { z } from "zod";
-import { Ai0LlmProvider } from "../../llm/providers/ai0/ai0-llm-provider";
-import type { BaseTool } from "../../tool/base-tool";
-import { LlmRequest } from "../llm-request";
-import { Role } from "../types";
-import { LlmRequestCompiler } from "./llm-request-compiler";
+import { Ai0LlmProvider } from "../../llm/providers/ai0/ai0-llm-provider.ts";
+import type { BaseTool } from "../../tool/base-tool.ts";
+import { LlmRequest } from "../llm-request.ts";
+import { Role } from "../types.ts";
+import { LlmRequestCompiler } from "./llm-request-compiler.ts";
 
 describe("LlmRequestCompiler", () => {
 	test("should compile", async () => {

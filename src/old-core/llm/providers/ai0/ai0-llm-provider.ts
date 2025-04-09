@@ -1,5 +1,5 @@
 import axios, { type AxiosError } from "axios";
-import { BaseLlmProvider } from "../../base-llm-provider/base-llm-provider";
+import { BaseLlmProvider } from "../../base-llm-provider/base-llm-provider.ts";
 
 export interface Ai0LlmRequestParams {
 	prompt: string;

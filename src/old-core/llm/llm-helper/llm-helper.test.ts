@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LlmHelper } from "./llm-helper";
+import { LlmHelper } from "./llm-helper.ts";
 
 describe("LlmHelper", () => {
 	describe("sanitizeLLMJsonResponse", () => {

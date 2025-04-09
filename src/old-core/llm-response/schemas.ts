@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { LLMResponseTypes } from "./types";
+import { LLMResponseTypes } from "./types.ts";
 
 export const LLMResponseTypesSchema = z.nativeEnum(LLMResponseTypes);
 
