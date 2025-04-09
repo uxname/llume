@@ -1,7 +1,7 @@
 import type { z } from "zod";
-import type { OutputParser } from "../../parsing/output-parser.ts";
-import type { ExecutionContext } from "../execution-context.ts";
-import type { RetryOptions } from "../retry-options.ts";
+import type { OutputParser } from "../../parsing/output-parser";
+import type { ExecutionContext } from "../execution-context";
+import type { RetryOptions } from "../retry-options";
 
 export interface AiFunctionDefinition<TInput, TOutput> {
 	inputSchema: z.ZodType<TInput>;

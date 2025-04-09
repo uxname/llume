@@ -1,4 +1,3 @@
-/** Defines the types of events that can occur during AI function execution. */
 export enum ExecutionEventType {
 	AI_FUNCTION_START = "AI_FUNCTION_START",
 	AI_FUNCTION_END = "AI_FUNCTION_END",
@@ -11,7 +10,7 @@ export enum ExecutionEventType {
 	LLM_START = "LLM_START",
 	LLM_END = "LLM_END",
 	LLM_ERROR = "LLM_ERROR",
-	RETRY_ATTEMPT = "RETRY_ATTEMPT", // Event for each retry attempt
+	RETRY_ATTEMPT = "RETRY_ATTEMPT",
 	OUTPUT_PARSING_START = "OUTPUT_PARSING_START",
 	OUTPUT_PARSING_END = "OUTPUT_PARSING_END",
 	OUTPUT_PARSING_ERROR = "OUTPUT_PARSING_ERROR",
@@ -20,14 +19,9 @@ export enum ExecutionEventType {
 	OUTPUT_VALIDATION_ERROR = "OUTPUT_VALIDATION_ERROR",
 }
 
-/** Represents a single event during the execution of an AI function. */
 export interface ExecutionEvent {
-	/** The type of the event. */
 	type: ExecutionEventType;
-	/** High-resolution timestamp of the event occurrence. */
-	timestamp: number; // Use performance.now() or Date.now()
-	/** Optional identifier of the AI function definition. */
+	timestamp: number;
 	functionId?: string;
-	/** Data associated with the event, structure depends on the event type. */
-	data: unknown; // Specific types should be used where possible in handlers
+	data: unknown;
 }
