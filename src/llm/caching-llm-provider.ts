@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import type { CacheProvider } from "../cache/cache-provider";
+import { ExecutionEventType } from "../events/execution-event";
 import type {
 	LLMGenerateOptions,
 	LLMProvider,
@@ -32,20 +33,57 @@ export class CachingLLMProvider implements LLMProvider {
 		options?: LLMGenerateOptions & { cacheTtl?: number },
 	): Promise<LLMResponse> {
 		const cacheKey = this.createCacheKey(prompt, options);
-		const cachedResponse = await this.cacheProvider.get<LLMResponse>(cacheKey);
+		const publishEvent = options?.publishEvent; // Get publish function from options
+
+		let cachedResponse: LLMResponse | undefined;
+		try {
+			cachedResponse = await this.cacheProvider.get<LLMResponse>(cacheKey);
+		} catch (error: unknown) {
+			publishEvent?.(ExecutionEventType.CACHE_ERROR, {
+				operation: "get",
+				cacheKey,
+				error: error instanceof Error ? error : new Error(String(error)),
+			});
+			// Proceed as if cache miss on error
+		}
 
 		if (cachedResponse) {
+			publishEvent?.(ExecutionEventType.CACHE_HIT, {
+				cacheKey,
+				value: cachedResponse, // Log the cached value
+			});
 			return {
 				...cachedResponse,
 				modelInfo: { ...cachedResponse.modelInfo, fromCache: true },
 			};
 		}
 
+		publishEvent?.(ExecutionEventType.CACHE_MISS, { cacheKey });
+
+		// Cache miss, call the real provider
+		// Pass the original options (including publishEvent) down,
+		// although the real provider likely won't use publishEvent for cache events.
 		const response = await this.realProvider.generate(prompt, options);
 
 		const ttl = options?.cacheTtl ?? this.defaultTtl;
-		// Do not wait for the set operation to complete
-		void this.cacheProvider.set(cacheKey, response, ttl);
+		publishEvent?.(ExecutionEventType.CACHE_WRITE, {
+			cacheKey,
+			value: response,
+			ttl,
+		});
+		try {
+			// Do not wait for the set operation to complete
+			void this.cacheProvider.set(cacheKey, response, ttl);
+		} catch (error: unknown) {
+			publishEvent?.(ExecutionEventType.CACHE_ERROR, {
+				operation: "set",
+				cacheKey,
+				value: response,
+				ttl,
+				error: error instanceof Error ? error : new Error(String(error)),
+			});
+			// Ignore set error, return the actual response
+		}
 
 		return {
 			...response,

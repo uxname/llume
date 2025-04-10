@@ -14,7 +14,6 @@ import {
 	OutputValidationError,
 	PromptCompilationError,
 } from "../errors";
-// import type { ExecutionContext } from "../execution-context"; // No longer needed
 import type { AiFunctionDefinition } from "./types";
 
 export type PublishEventFn = (type: ExecutionEventType, data: unknown) => void;
@@ -48,7 +47,6 @@ export async function validateInput<TInput>(
 
 export function compilePrompt<TInput>(
 	validatedInput: TInput,
-	// definition: AiFunctionDefinition<TInput, unknown>, // No longer needed
 	mainPromptTemplateDelegate: Handlebars.TemplateDelegate,
 	userQueryTemplateDelegate: Handlebars.TemplateDelegate<TInput>,
 	jsonSchemaString: string | null,
@@ -98,6 +96,7 @@ export async function callLlm(
 	try {
 		const providerOptions: LLMGenerateOptions = {
 			llmOptions: llmOptions.llmOptions,
+			publishEvent: publishEvent,
 		};
 		const llmResponse = await llmProvider.generate(
 			compiledPrompt,
@@ -180,7 +179,6 @@ export async function validateOutput<TOutput>(
 export interface ExecuteSingleAttemptArgs<TInput, TOutput> {
 	input: TInput;
 	definition: AiFunctionDefinition<TInput, TOutput>;
-	// context: ExecutionContext; // Removed
 	mainPromptTemplateDelegate: Handlebars.TemplateDelegate;
 	userQueryTemplateDelegate: Handlebars.TemplateDelegate<TInput>;
 	parser: OutputParser<TOutput>;
@@ -192,7 +190,6 @@ export interface ExecuteSingleAttemptArgs<TInput, TOutput> {
 export async function executeSingleAttempt<TInput, TOutput>({
 	input,
 	definition,
-	// context, // Removed
 	mainPromptTemplateDelegate,
 	userQueryTemplateDelegate,
 	parser,
@@ -208,7 +205,6 @@ export async function executeSingleAttempt<TInput, TOutput>({
 
 	const compiledPrompt = compilePrompt(
 		validatedInput,
-		// definition, // Removed
 		mainPromptTemplateDelegate,
 		userQueryTemplateDelegate,
 		jsonSchemaString,

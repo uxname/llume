@@ -1,6 +1,9 @@
+import type { PublishEventFn } from "../core/ai-function/execution-steps";
+
 export interface LLMGenerateOptions {
 	llmOptions?: Record<string, unknown>;
-	systemPrompt?: string; // Keep for potential direct use by providers, though core logic doesn't pass it
+	systemPrompt?: string;
+	publishEvent?: PublishEventFn;
 }
 
 export interface LLMResponse {
