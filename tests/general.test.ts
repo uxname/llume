@@ -21,7 +21,7 @@ class ConsoleEventHandler implements EventHandler {
 		} else if (event.type === ExecutionEventType.AI_FUNCTION_END) {
 			console.log("[EVENT HANDLED (RESULT)]", event.data);
 		} else {
-			// console.log("[EVENT HANDLED]", event.type, event.data);
+			console.log("[EVENT HANDLED]", event.type, event.data);
 		}
 	}
 }
@@ -64,9 +64,11 @@ describe("General AiFunction tests", () => {
 
 		const input: CalculatorInput = { expression: "10 * (5 + 3)" };
 		const result = await calculate(input);
+		const result2 = await calculate(input);
 
 		console.log(`Input Expression: ${input.expression}`);
 		console.log(`Calculation Result: ${result.result}`);
+		console.log(`Calculation Result 2: ${result2.result}`);
 		console.log("---------------------------------------\n");
 
 		expect(result.result).toBeTypeOf("number");
