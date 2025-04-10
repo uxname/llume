@@ -2,7 +2,6 @@ import type { PublishEventFn } from "../core/ai-function/execution-steps";
 
 export interface LLMGenerateOptions {
 	llmOptions?: Record<string, unknown>;
-	systemPrompt?: string;
 	publishEvent?: PublishEventFn;
 }
 

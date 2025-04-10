@@ -31,12 +31,8 @@ export class Ai0Provider implements LLMProvider {
 		prompt: string,
 		options?: LLMGenerateOptions,
 	): Promise<LLMResponse> {
-		const finalPrompt = options?.systemPrompt
-			? `${options.systemPrompt}\n\n${prompt}`
-			: prompt;
-
 		const params = {
-			prompt: finalPrompt,
+			prompt: prompt,
 			provider: this.defaultProvider,
 			randomProvider: false,
 		};
