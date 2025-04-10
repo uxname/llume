@@ -1,5 +1,3 @@
-import type { z } from "zod";
-import { zodToJsonSchema } from "zod-to-json-schema";
 import { OutputParsingError } from "../core/errors";
 
 function extractJsonString(rawOutput: string): string {
@@ -55,38 +53,5 @@ export function parseJson<TOutput>(rawOutput: string): TOutput {
 				? error.message
 				: "Failed to parse extracted content as JSON";
 		throw new OutputParsingError(message, rawOutput, error);
-	}
-}
-
-export function getJsonFormatInstructions<TOutput>(
-	schema: z.ZodType<TOutput>,
-): string {
-	const baseInstructions = `RESPONSE FORMATTING INSTRUCTIONS:
-You MUST respond ONLY with a valid JSON object that strictly adheres to the JSON Schema provided below.
-Do NOT include any explanatory text, comments, apologies, or markdown formatting (like \`\`\`) before or after the JSON object.
-The JSON object MUST be the only content in your response.`;
-
-	try {
-		const jsonSchema = zodToJsonSchema(schema, {
-			target: "jsonSchema7",
-			$refStrategy: "none",
-		});
-
-		// biome-ignore lint/performance/noDelete: Cleaning schema object
-		delete jsonSchema.$schema;
-		// biome-ignore lint/performance/noDelete: Cleaning schema object
-		delete jsonSchema.default;
-		// biome-ignore lint/performance/noDelete: Cleaning schema object
-		delete jsonSchema.definitions;
-
-		const schemaString = JSON.stringify(jsonSchema, null, 2);
-
-		return `${baseInstructions}\n\nJSON SCHEMA:\n\`\`\`json\n${schemaString}\n\`\`\``;
-	} catch (error: unknown) {
-		console.warn(
-			"Could not generate JSON schema from Zod schema. Falling back to basic instructions.",
-			error,
-		);
-		return `${baseInstructions}\n\nPlease ensure your response is a valid JSON object.`;
 	}
 }
