@@ -6,6 +6,7 @@ import {
 	type ExecutionContext,
 	type ExecutionEvent,
 	ExecutionEventType,
+	InMemoryCacheProvider,
 	createAiFunction,
 } from "../src";
 import { Ai0Provider } from "./ai0-llm-provider";
@@ -48,6 +49,7 @@ describe("General AiFunction tests", () => {
 			userQueryTemplate:
 				"Calculate the result of the following mathematical expression: {{{expression}}}",
 			retryOptions: { maxAttempts: 2, delayMs: 100 },
+			cacheOptions: { enabled: true },
 		};
 
 		const executionContext: ExecutionContext = {
@@ -56,6 +58,7 @@ describe("General AiFunction tests", () => {
 				process.env.AI0_API_KEY!,
 			),
 			eventHandler: new ConsoleEventHandler(),
+			cacheProvider: new InMemoryCacheProvider(),
 		};
 
 		const calculate = createAiFunction(calculatorDefinition, executionContext);
@@ -69,6 +72,7 @@ describe("General AiFunction tests", () => {
 		console.log(`Input Expression: ${input.expression}`);
 		console.log(`Calculation Result: ${result.result}`);
 		console.log(`Calculation Result 2: ${result2.result}`);
+		expect(result.result).toEqual(result2.result);
 		console.log("---------------------------------------\n");
 
 		expect(result.result).toBeTypeOf("number");
