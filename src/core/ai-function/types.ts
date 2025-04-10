@@ -8,10 +8,15 @@ export interface AiFunctionDefinition<TInput, TOutput> {
 	outputSchema: z.ZodType<TOutput>;
 	promptTemplate: string;
 	systemPrompt?: string;
+	mainPromptTemplate?: string;
 	outputParser?: OutputParser<TOutput>;
 	retryOptions?: RetryOptions;
 	llmOptions?: Record<string, unknown>;
 	functionId?: string;
+	cacheOptions?: {
+		enabled?: boolean;
+		ttl?: number;
+	};
 }
 
 export type AiFunctionExecutable<TInput, TOutput> = (

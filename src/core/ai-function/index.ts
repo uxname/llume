@@ -3,6 +3,8 @@ import {
 	type ExecutionEvent,
 	ExecutionEventType,
 } from "../../events/execution-event";
+import { CachingLLMProvider } from "../../llm/caching-llm-provider"; // Added import
+import type { LLMProvider } from "../../llm/llm-provider"; // Added import
 import {
 	getJsonFormatInstructions,
 	parseJson,
@@ -48,19 +50,34 @@ export function createAiFunction<TInput, TOutput>(
 		},
 	};
 
-	let compiledPromptTemplate: Handlebars.TemplateDelegate<TInput>;
+	let userPromptTemplate: Handlebars.TemplateDelegate<TInput>;
 	try {
-		compiledPromptTemplate = Handlebars.compile<TInput>(
-			definition.promptTemplate,
-			{
-				noEscape: true,
-				strict: true,
-			},
-		);
+		userPromptTemplate = Handlebars.compile<TInput>(definition.promptTemplate, {
+			noEscape: true,
+			strict: true,
+		});
 	} catch (e: unknown) {
 		const message =
-			e instanceof Error ? e.message : "Handlebars template compilation failed";
+			e instanceof Error
+				? e.message
+				: "User prompt template compilation failed";
 		throw new PromptCompilationError(message, e);
+	}
+
+	let mainPromptTemplateDelegate: Handlebars.TemplateDelegate | null = null;
+	if (definition.mainPromptTemplate) {
+		try {
+			mainPromptTemplateDelegate = Handlebars.compile(
+				definition.mainPromptTemplate,
+				{ noEscape: true, strict: true },
+			);
+		} catch (e: unknown) {
+			const message =
+				e instanceof Error
+					? e.message
+					: "Main prompt template compilation failed";
+			throw new PromptCompilationError(message, e);
+		}
 	}
 
 	return async (
@@ -73,7 +90,16 @@ export function createAiFunction<TInput, TOutput>(
 				"Execution context must be provided either at creation time or at runtime.",
 			);
 		}
-		const { eventHandler } = context;
+		const { eventHandler, llmProvider, cacheProvider } = context;
+
+		let effectiveLlmProvider: LLMProvider = llmProvider;
+		if (definition.cacheOptions?.enabled === true && cacheProvider) {
+			effectiveLlmProvider = new CachingLLMProvider({
+				realProvider: llmProvider,
+				cacheProvider: cacheProvider,
+				defaultTtl: definition.cacheOptions.ttl, // Pass default TTL for this function
+			});
+		}
 
 		const publishEvent: PublishEventFn = (
 			type: ExecutionEventType,
@@ -103,10 +129,12 @@ export function createAiFunction<TInput, TOutput>(
 				executeSingleAttempt<TInput, TOutput>({
 					input,
 					definition,
-					context,
-					compiledPromptTemplate,
+					context, // Pass original context
+					userPromptTemplate,
+					mainPromptTemplateDelegate,
 					parser,
 					publishEvent,
+					effectiveLlmProvider, // Pass the potentially wrapped provider
 				});
 
 			const result = await executeWithRetryPolicy<TOutput>({

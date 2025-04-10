@@ -1,4 +1,4 @@
-import type Handlebars from "handlebars";
+import Handlebars from "handlebars"; // Ensure Handlebars is imported
 import { ZodError, type ZodSchema } from "zod";
 import { ExecutionEventType } from "../../events/execution-event";
 import type {
@@ -18,6 +18,21 @@ import type { ExecutionContext } from "../execution-context";
 import type { AiFunctionDefinition } from "./types";
 
 export type PublishEventFn = (type: ExecutionEventType, data: unknown) => void;
+
+const DEFAULT_MAIN_PROMPT_TEMPLATE =
+	"{{#if systemPrompt}}{{systemPrompt}}\n\n{{/if}}{{userPromptContent}}";
+
+let defaultCompiledMainTemplate: Handlebars.TemplateDelegate | null = null;
+
+function getDefaultCompiledMainTemplate(): Handlebars.TemplateDelegate {
+	if (!defaultCompiledMainTemplate) {
+		defaultCompiledMainTemplate = Handlebars.compile(
+			DEFAULT_MAIN_PROMPT_TEMPLATE,
+			{ noEscape: true, strict: true },
+		);
+	}
+	return defaultCompiledMainTemplate;
+}
 
 export async function validateInput<TInput>(
 	input: TInput,
@@ -48,19 +63,36 @@ export async function validateInput<TInput>(
 
 export function compilePrompt<TInput>(
 	validatedInput: TInput,
-	compiledTemplate: Handlebars.TemplateDelegate<TInput>,
+	definition: AiFunctionDefinition<TInput, unknown>, // Use unknown for TOutput here
+	userPromptTemplate: Handlebars.TemplateDelegate<TInput>,
+	mainPromptTemplateDelegate: Handlebars.TemplateDelegate | null, // Can be null if using default
 	parser: OutputParser<unknown>,
 	publishEvent: PublishEventFn,
 ): string {
 	publishEvent(ExecutionEventType.PROMPT_COMPILATION_START, { validatedInput });
 	try {
-		let compiledPrompt = compiledTemplate(validatedInput);
+		// 1. Compile user prompt content
+		const userPromptContent = userPromptTemplate(validatedInput);
+
+		// 2. Select and compile main template
+		const templateToUse =
+			mainPromptTemplateDelegate ?? getDefaultCompiledMainTemplate();
+		const finalPrompt = templateToUse({
+			systemPrompt: definition.systemPrompt,
+			userPromptContent: userPromptContent,
+		});
+
+		// 3. Add format instructions (if any)
+		let promptWithInstructions = finalPrompt;
 		const formatInstructions = parser.getFormatInstructions?.();
 		if (formatInstructions) {
-			compiledPrompt += `\n\n${formatInstructions}`;
+			promptWithInstructions += `\n\n${formatInstructions}`;
 		}
-		publishEvent(ExecutionEventType.PROMPT_COMPILATION_END, { compiledPrompt });
-		return compiledPrompt;
+
+		publishEvent(ExecutionEventType.PROMPT_COMPILATION_END, {
+			compiledPrompt: promptWithInstructions,
+		});
+		return promptWithInstructions;
 	} catch (error: unknown) {
 		const message =
 			error instanceof Error
@@ -69,6 +101,7 @@ export function compilePrompt<TInput>(
 		const compilationError = new PromptCompilationError(message, error);
 		publishEvent(ExecutionEventType.PROMPT_COMPILATION_ERROR, {
 			validatedInput,
+			templateUsed: definition.mainPromptTemplate ? "custom" : "default",
 			error: compilationError,
 		});
 		throw compilationError;
@@ -78,15 +111,17 @@ export function compilePrompt<TInput>(
 export async function callLlm(
 	compiledPrompt: string,
 	llmProvider: LLMProvider,
-	llmOptions: LLMGenerateOptions,
+	llmOptions: LLMGenerateOptions & { cacheTtl?: number }, // Pass cacheTtl if needed by provider wrapper
 	publishEvent: PublishEventFn,
 ): Promise<LLMResponse> {
 	publishEvent(ExecutionEventType.LLM_START, {
 		compiledPrompt,
 		systemPrompt: llmOptions.systemPrompt,
 		llmOptions: llmOptions.llmOptions,
+		cacheTtl: llmOptions.cacheTtl, // Log cache TTL if provided
 	});
 	try {
+		// Pass all options, including potential cacheTtl, to the provider's generate method
 		const llmResponse = await llmProvider.generate(compiledPrompt, llmOptions);
 		publishEvent(ExecutionEventType.LLM_END, { response: llmResponse });
 		return llmResponse;
@@ -166,18 +201,22 @@ export interface ExecuteSingleAttemptArgs<TInput, TOutput> {
 	input: TInput;
 	definition: AiFunctionDefinition<TInput, TOutput>;
 	context: ExecutionContext;
-	compiledPromptTemplate: Handlebars.TemplateDelegate<TInput>;
+	userPromptTemplate: Handlebars.TemplateDelegate<TInput>; // Renamed from compiledPromptTemplate
+	mainPromptTemplateDelegate: Handlebars.TemplateDelegate | null; // Added
 	parser: OutputParser<TOutput>;
 	publishEvent: PublishEventFn;
+	effectiveLlmProvider: LLMProvider; // Added to pass potentially wrapped provider
 }
 
 export async function executeSingleAttempt<TInput, TOutput>({
 	input,
 	definition,
-	context,
-	compiledPromptTemplate,
+	context, // Keep context for potential future use inside steps
+	userPromptTemplate,
+	mainPromptTemplateDelegate,
 	parser,
 	publishEvent,
+	effectiveLlmProvider, // Use this provider
 }: ExecuteSingleAttemptArgs<TInput, TOutput>): Promise<TOutput> {
 	const validatedInput = await validateInput(
 		input,
@@ -187,18 +226,22 @@ export async function executeSingleAttempt<TInput, TOutput>({
 
 	const compiledPrompt = compilePrompt(
 		validatedInput,
-		compiledPromptTemplate,
+		definition, // Pass full definition
+		userPromptTemplate,
+		mainPromptTemplateDelegate,
 		parser,
 		publishEvent,
 	);
 
-	const llmOptions: LLMGenerateOptions = {
-		systemPrompt: definition.systemPrompt,
+	const llmOptions: LLMGenerateOptions & { cacheTtl?: number } = {
+		systemPrompt: definition.systemPrompt, // System prompt is now handled by main template
 		llmOptions: definition.llmOptions,
+		cacheTtl: definition.cacheOptions?.ttl, // Pass cache TTL from definition
 	};
+
 	const llmResponse = await callLlm(
 		compiledPrompt,
-		context.llmProvider,
+		effectiveLlmProvider, // Use the passed provider
 		llmOptions,
 		publishEvent,
 	);
