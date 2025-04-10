@@ -1,4 +1,5 @@
-import type { ZodTypeAny, z } from "zod";
+import type { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { OutputParsingError } from "../core/errors";
 
 function extractJsonString(rawOutput: string): string {
@@ -59,53 +60,31 @@ export function parseJson<TOutput>(rawOutput: string): TOutput {
 export function getJsonFormatInstructions<TOutput>(
 	schema: z.ZodType<TOutput>,
 ): string {
-	let instructions = `RESPONSE FORMATTING INSTRUCTIONS:
-You MUST respond ONLY with a valid JSON object that strictly adheres to the specified structure.
+	const baseInstructions = `RESPONSE FORMATTING INSTRUCTIONS:
+You MUST respond ONLY with a valid JSON object that strictly adheres to the JSON Schema provided below.
 Do NOT include any explanatory text, comments, apologies, or markdown formatting (like \`\`\`) before or after the JSON object.
 The JSON object MUST be the only content in your response.`;
 
-	const safeSchema = schema.safeParse(undefined);
-	if (
-		!safeSchema.success &&
-		"shape" in schema &&
-		typeof schema.shape === "object" &&
-		schema.shape !== null
-	) {
-		try {
-			const shape = schema.shape as Record<string, ZodTypeAny>;
-			const keysDescription = Object.entries(shape)
-				.map(([key, value]) => {
-					let typeName = value._def?.typeName || "unknown";
-					if (
-						typeName === "ZodString" &&
-						value._def.checks?.some((c: { kind: string }) => c.kind === "enum")
-					) {
-						typeName = `enum: [${(value._def.values as string[]).map((v) => `"${v}"`).join(", ")}]`;
-					} else if (typeName === "ZodString") typeName = "string";
-					else if (typeName === "ZodNumber") typeName = "number";
-					else if (typeName === "ZodBoolean") typeName = "boolean";
-					else if (typeName === "ZodArray") typeName = "array";
-					else if (typeName === "ZodObject") typeName = "object";
+	try {
+		const jsonSchema = zodToJsonSchema(schema, {
+			target: "jsonSchema7", // Specify target version if needed, defaults may vary
+			$refStrategy: "none", // Avoid external refs for simpler inline schema
+		});
 
-					const description = value.description
-						? ` (${value.description})`
-						: "";
-					return `  "${key}": <${typeName}>${description}`;
-				})
-				.join(",\n");
+		// Remove unnecessary top-level fields that might confuse the LLM
+		jsonSchema.$schema = undefined;
+		jsonSchema.default = undefined;
+		jsonSchema.definitions = undefined; // If $refStrategy is 'none', this shouldn't exist anyway
 
-			if (keysDescription) {
-				instructions += `\n\nREQUIRED JSON STRUCTURE:\n{\n${keysDescription}\n}`;
-			}
-		} catch (e) {
-			console.warn(
-				"Could not generate detailed JSON structure instructions:",
-				e,
-			);
-		}
-	} else if (!safeSchema.success && "typeName" in schema._def) {
-		instructions += `\n\nThe response should be a JSON representation of type: ${schema._def.typeName}`;
+		const schemaString = JSON.stringify(jsonSchema, null, 2);
+
+		return `${baseInstructions}\n\nJSON SCHEMA:\n\`\`\`json\n${schemaString}\n\`\`\``;
+	} catch (error: unknown) {
+		console.warn(
+			"Could not generate JSON schema from Zod schema. Falling back to basic instructions.",
+			error,
+		);
+		// Fallback to basic instructions if schema generation fails
+		return `${baseInstructions}\n\nPlease ensure your response is a valid JSON object.`;
 	}
-
-	return instructions;
 }

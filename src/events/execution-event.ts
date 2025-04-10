@@ -23,5 +23,6 @@ export interface ExecutionEvent {
 	type: ExecutionEventType;
 	timestamp: number;
 	functionId?: string;
-	data: unknown;
+	// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+	data: any;
 }

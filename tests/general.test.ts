@@ -14,7 +14,14 @@ describe("General tests", () => {
 	test("calculate", async () => {
 		class ConsoleEventHandler implements EventHandler {
 			publish(event: ExecutionEvent): void {
-				console.log("[EVENT HANDLED]", event);
+				if (event.type === ExecutionEventType.PROMPT_COMPILATION_END) {
+					console.log(
+						"[EVENT HANDLED (COMPILED PROMPT)]",
+						event.data.compiledPrompt,
+					);
+				} else {
+					console.log("[EVENT HANDLED]", event);
+				}
 			}
 		}
 
