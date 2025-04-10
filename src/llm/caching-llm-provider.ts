@@ -35,21 +35,27 @@ export class CachingLLMProvider implements LLMProvider {
 		const cachedResponse = await this.cacheProvider.get<LLMResponse>(cacheKey);
 
 		if (cachedResponse) {
-			return cachedResponse;
+			return {
+				...cachedResponse,
+				modelInfo: { ...cachedResponse.modelInfo, fromCache: true },
+			};
 		}
 
 		const response = await this.realProvider.generate(prompt, options);
 
 		const ttl = options?.cacheTtl ?? this.defaultTtl;
-		await this.cacheProvider.set(cacheKey, response, ttl);
+		// Do not wait for the set operation to complete
+		void this.cacheProvider.set(cacheKey, response, ttl);
 
-		return response;
+		return {
+			...response,
+			modelInfo: { ...response.modelInfo, fromCache: false },
+		};
 	}
 
 	private createCacheKey(prompt: string, options?: LLMGenerateOptions): string {
 		const keyData = {
 			prompt,
-			systemPrompt: options?.systemPrompt,
 			llmOptions: options?.llmOptions,
 		};
 		const keyString = JSON.stringify(keyData);

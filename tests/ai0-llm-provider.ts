@@ -6,7 +6,7 @@ import {
 	type LLMResponse,
 } from "../src";
 
-export class Ai0 implements LLMProvider {
+export class Ai0Provider implements LLMProvider {
 	private readonly baseUrl: string;
 	private readonly apiKey: string;
 	private readonly defaultProvider: string;
@@ -19,7 +19,7 @@ export class Ai0 implements LLMProvider {
 		requestTimeout = 60000,
 	) {
 		if (!baseUrl || !apiKey) {
-			throw new Error("[Ai0Llm] Base URL and API Key are required.");
+			throw new Error("[Ai0Provider] Base URL and API Key are required.");
 		}
 		this.baseUrl = baseUrl;
 		this.apiKey = apiKey;
@@ -28,37 +28,57 @@ export class Ai0 implements LLMProvider {
 	}
 
 	async generate(
-		_prompt: string,
+		prompt: string,
 		options?: LLMGenerateOptions,
 	): Promise<LLMResponse> {
-		const prompt = options?.systemPrompt
-			? `${options.systemPrompt} ${_prompt}`
-			: _prompt;
+		const finalPrompt = options?.systemPrompt
+			? `${options.systemPrompt}\n\n${prompt}`
+			: prompt;
 
 		const params = {
-			prompt,
+			prompt: finalPrompt,
 			provider: this.defaultProvider,
 			randomProvider: false,
 		};
 
-		const response = await axios.post<{ text: string }>(this.baseUrl, params, {
-			headers: {
-				"Content-Type": "application/json",
-				Authorization: this.apiKey,
-			},
-			timeout: this.requestTimeout,
-		});
-
-		if (response.status === 200 && response.data && response.data.text) {
-			return {
-				rawOutput: response.data.text,
-				modelInfo: {
-					name: "Ai0",
-					version: "1.0.0",
+		try {
+			const response = await axios.post<{ text: string }>(
+				this.baseUrl,
+				params,
+				{
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: this.apiKey,
+					},
+					timeout: this.requestTimeout,
 				},
-			};
-		}
+			);
 
-		throw new LLMError("[AI0] Unexpected response", response.data);
+			if (response.status === 200 && response.data?.text) {
+				return {
+					rawOutput: response.data.text,
+					modelInfo: {
+						name: "Ai0",
+						provider: this.defaultProvider,
+					},
+				};
+			}
+
+			throw new LLMError(
+				`[Ai0Provider] Unexpected response status: ${response.status}`,
+				response.data,
+			);
+		} catch (error) {
+			if (axios.isAxiosError(error)) {
+				throw new LLMError(
+					`[Ai0Provider] Request failed: ${error.message}`,
+					error.response?.data,
+				);
+			}
+			throw new LLMError(
+				`[Ai0Provider] Unknown error: ${error instanceof Error ? error.message : String(error)}`,
+				error,
+			);
+		}
 	}
 }

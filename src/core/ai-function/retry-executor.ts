@@ -29,7 +29,7 @@ export async function executeWithRetryPolicy<TOutput>({
 		} catch (error: unknown) {
 			if (!(error instanceof Error)) {
 				lastError = new AiFunctionError(
-					`Unknown non-error value thrown: ${error}`,
+					`Unknown non-error value thrown: ${String(error)}`,
 				);
 			} else {
 				lastError = error;

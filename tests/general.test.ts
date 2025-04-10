@@ -1,4 +1,4 @@
-import { describe, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { z } from "zod";
 import {
 	type AiFunctionDefinition,
@@ -8,67 +8,112 @@ import {
 	ExecutionEventType,
 	createAiFunction,
 } from "../src";
-import { Ai0 } from "./ai0-llm-provider";
+import { Ai0Provider } from "./ai0-llm-provider";
 
-describe("General tests", () => {
-	test("calculate", async () => {
-		class ConsoleEventHandler implements EventHandler {
-			publish(event: ExecutionEvent): void {
-				if (event.type === ExecutionEventType.PROMPT_COMPILATION_END) {
-					console.log(
-						"[EVENT HANDLED (COMPILED PROMPT)]",
-						event.data.compiledPrompt,
-					);
-				} else {
-					console.log("[EVENT HANDLED]", event);
-				}
-			}
+class ConsoleEventHandler implements EventHandler {
+	publish(event: ExecutionEvent): void {
+		if (event.type === ExecutionEventType.PROMPT_COMPILATION_END) {
+			console.log(
+				"[EVENT HANDLED (COMPILED PROMPT)]\n",
+				(event.data as { compiledPrompt: string }).compiledPrompt,
+				"\n---------------------------------------\n",
+			);
+		} else if (event.type === ExecutionEventType.AI_FUNCTION_END) {
+			console.log("[EVENT HANDLED (RESULT)]", event.data);
+		} else {
+			// console.log("[EVENT HANDLED]", event.type, event.data);
 		}
+	}
+}
 
+describe("General AiFunction tests", () => {
+	test("should execute a simple calculation task", async () => {
 		const CalculatorInputSchema = z.object({
 			expression: z.string(),
 		});
-		// Выводим тип из схемы
 		type CalculatorInput = z.infer<typeof CalculatorInputSchema>;
 
 		const CalculatorOutputSchema = z.object({
-			result: z.number().describe("Результат вычисления"),
+			result: z.number().describe("The numerical result of the calculation"),
 		});
-		// Выводим тип из схемы
 		type CalculatorOutput = z.infer<typeof CalculatorOutputSchema>;
 
 		const calculatorDefinition: AiFunctionDefinition<
 			CalculatorInput,
 			CalculatorOutput
 		> = {
-			functionId: "calculator", // ID для логов/событий
+			functionId: "calculator",
 			inputSchema: CalculatorInputSchema,
 			outputSchema: CalculatorOutputSchema,
-			// Простой промпт. Инструкции по формату JSON добавятся автоматически.
-			userQueryTemplate: "Посчитай следующее выражение: {{{expression}}}",
-			// outputParser: не указан, используется дефолтный JSON
-			retryOptions: { maxAttempts: 3, delayMs: 200 }, // Попробуем 2 раза максимум
+			userQueryTemplate:
+				"Calculate the result of the following mathematical expression: {{{expression}}}",
+			retryOptions: { maxAttempts: 2, delayMs: 100 },
 		};
 
 		const executionContext: ExecutionContext = {
-			llmProvider: new Ai0(process.env.AI0_URL!, process.env.AI0_API_KEY!),
-			eventHandler: new ConsoleEventHandler(), // Добавляем обработчик событий
+			llmProvider: new Ai0Provider(
+				process.env.AI0_URL!,
+				process.env.AI0_API_KEY!,
+			),
+			eventHandler: new ConsoleEventHandler(),
 		};
 
-		const multiplyAiFunction = createAiFunction(
-			calculatorDefinition,
-			executionContext,
-		);
+		const calculate = createAiFunction(calculatorDefinition, executionContext);
 
 		console.log("\n--- Running AI Calculator Example ---");
 
-		const result = await multiplyAiFunction({
-			expression: "2+2",
+		const input: CalculatorInput = { expression: "10 * (5 + 3)" };
+		const result = await calculate(input);
+
+		console.log(`Input Expression: ${input.expression}`);
+		console.log(`Calculation Result: ${result.result}`);
+		console.log("---------------------------------------\n");
+
+		expect(result.result).toBeTypeOf("number");
+		// We can't guarantee the exact result from the LLM, but we expect a number
+	});
+
+	test("should use custom promptTemplate", async () => {
+		const GreeterInputSchema = z.object({
+			name: z.string(),
+			language: z.string().default("English").optional(),
 		});
+		type GreeterInput = z.infer<typeof GreeterInputSchema>;
 
-		console.log(`Result: ${result.result.toString()}`);
-		console.log("\n---------------------------------------\n");
+		const GreeterOutputSchema = z.object({
+			greeting: z.string(),
+		});
+		type GreeterOutput = z.infer<typeof GreeterOutputSchema>;
 
-		console.log("\n--- Example Finished ---");
+		const greeterDefinition: AiFunctionDefinition<GreeterInput, GreeterOutput> =
+			{
+				functionId: "greeter",
+				inputSchema: GreeterInputSchema,
+				outputSchema: GreeterOutputSchema,
+				promptTemplate: `<|system|>You are a friendly greeter. Respond in {{language}}. Output JSON only. JSON Schema: {{{jsonSchema}}}<|end|>
+<|user|>{{{userQuery}}}<|end|>
+<|assistant|>`,
+				userQueryTemplate: "Generate a greeting for {{name}}.",
+			};
+
+		const executionContext: ExecutionContext = {
+			llmProvider: new Ai0Provider(
+				process.env.AI0_URL!,
+				process.env.AI0_API_KEY!,
+			),
+			eventHandler: new ConsoleEventHandler(),
+		};
+
+		const greet = createAiFunction(greeterDefinition, executionContext);
+
+		console.log("\n--- Running AI Greeter Example (Custom Template) ---");
+		const input: GreeterInput = { name: "Alice", language: "Spanish" };
+		const result = await greet(input);
+
+		console.log(`Input: Name=${input.name}, Language=${input.language}`);
+		console.log(`Greeting Result: ${result.greeting}`);
+		console.log("---------------------------------------\n");
+
+		expect(result.greeting).toBeTypeOf("string");
 	});
 });

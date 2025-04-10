@@ -22,6 +22,7 @@ export const defaultRetryCondition: RetryConditionFn = (
 	if (error instanceof AiFunctionError) {
 		return false;
 	}
+
 	return false;
 };
 

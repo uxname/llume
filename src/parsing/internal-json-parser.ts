@@ -4,7 +4,8 @@ import { OutputParsingError } from "../core/errors";
 
 function extractJsonString(rawOutput: string): string {
 	const trimmed = rawOutput.trim();
-	const jsonFenceMatch = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
+
+	const jsonFenceMatch = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/im);
 	if (jsonFenceMatch?.[1]) {
 		return jsonFenceMatch[1].trim();
 	}
@@ -67,14 +68,16 @@ The JSON object MUST be the only content in your response.`;
 
 	try {
 		const jsonSchema = zodToJsonSchema(schema, {
-			target: "jsonSchema7", // Specify target version if needed, defaults may vary
-			$refStrategy: "none", // Avoid external refs for simpler inline schema
+			target: "jsonSchema7",
+			$refStrategy: "none",
 		});
 
-		// Remove unnecessary top-level fields that might confuse the LLM
-		jsonSchema.$schema = undefined;
-		jsonSchema.default = undefined;
-		jsonSchema.definitions = undefined; // If $refStrategy is 'none', this shouldn't exist anyway
+		// biome-ignore lint/performance/noDelete: Cleaning schema object
+		delete jsonSchema.$schema;
+		// biome-ignore lint/performance/noDelete: Cleaning schema object
+		delete jsonSchema.default;
+		// biome-ignore lint/performance/noDelete: Cleaning schema object
+		delete jsonSchema.definitions;
 
 		const schemaString = JSON.stringify(jsonSchema, null, 2);
 
@@ -84,7 +87,6 @@ The JSON object MUST be the only content in your response.`;
 			"Could not generate JSON schema from Zod schema. Falling back to basic instructions.",
 			error,
 		);
-		// Fallback to basic instructions if schema generation fails
 		return `${baseInstructions}\n\nPlease ensure your response is a valid JSON object.`;
 	}
 }

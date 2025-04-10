@@ -22,9 +22,9 @@ export class InMemoryCacheProvider implements CacheProvider {
 	constructor(options: InMemoryCacheProviderOptions = {}) {
 		this.maxSize = options.maxSize ?? 1000;
 		this.defaultTtl = options.defaultTtl;
-		this.cleanupIntervalMs = options.cleanupIntervalMs ?? 60000; // Default: 1 minute
+		this.cleanupIntervalMs = options.cleanupIntervalMs ?? 60000;
 
-		if (this.cleanupIntervalMs > 0) {
+		if (this.cleanupIntervalMs > 0 && this.maxSize > 0) {
 			this.startCleanupInterval();
 		}
 	}
@@ -44,12 +44,20 @@ export class InMemoryCacheProvider implements CacheProvider {
 	}
 
 	async set<T>(key: string, value: T, ttl?: number): Promise<void> {
+		if (this.maxSize <= 0) return; // Do nothing if cache size is zero or negative
+
 		if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
 			this.evictOldest();
 		}
 
+		// Ensure we don't exceed maxSize even after eviction if maxSize is small
+		if (this.cache.size >= this.maxSize && !this.cache.has(key)) {
+			return; // Should not happen if evictOldest works, but as a safeguard
+		}
+
 		const effectiveTtl = ttl ?? this.defaultTtl;
-		const expiry = effectiveTtl ? Date.now() + effectiveTtl : undefined;
+		const expiry =
+			effectiveTtl && effectiveTtl > 0 ? Date.now() + effectiveTtl : undefined;
 
 		const entry: CacheEntry<T> = {
 			value,
@@ -99,7 +107,7 @@ export class InMemoryCacheProvider implements CacheProvider {
 		this.cleanupInterval = setInterval(() => {
 			this.cleanupExpired();
 		}, this.cleanupIntervalMs);
-		this.cleanupInterval.unref(); // Allow Node.js process to exit if this is the only timer
+		this.cleanupInterval.unref();
 	}
 
 	stopCleanupInterval(): void {

@@ -1,35 +1,36 @@
-// Core function
 export { createAiFunction } from "./core/ai-function";
 
-// Core types and interfaces
-export type { ExecutionContext } from "./core/execution-context";
-export type { RetryOptions, RetryConditionFn } from "./core/retry-options";
-
-// LLM related interfaces
 export type {
-	LLMProvider,
-	LLMResponse,
-	LLMGenerateOptions,
-} from "./llm/llm-provider";
+	AiFunctionDefinition,
+	AiFunctionExecutable,
+} from "./core/ai-function/types";
+export type { ExecutionContext } from "./core/execution-context";
+export type { RetryConditionFn, RetryOptions } from "./core/retry-options";
 
-// Parsing interface (for custom parsers)
-export type { OutputParser } from "./parsing/output-parser";
-
-// Event handling interfaces and types
-export type { EventHandler } from "./events/event-handler";
-export { ExecutionEventType } from "./events/execution-event";
-export type { ExecutionEvent } from "./events/execution-event";
-
-// Custom Error classes
 export {
 	AiFunctionError,
 	InputValidationError,
+	LLMError,
+	MaxRetriesExceededError,
+	MissingContextError,
 	OutputParsingError,
 	OutputValidationError,
-	LLMError,
 	PromptCompilationError,
-	MissingContextError,
-	MaxRetriesExceededError,
 } from "./core/errors";
-export type { AiFunctionDefinition } from "./core/ai-function/types.ts";
-export type { AiFunctionExecutable } from "./core/ai-function/types.ts";
+
+export type { EventHandler } from "./events/event-handler";
+export type { ExecutionEvent } from "./events/execution-event";
+export { ExecutionEventType } from "./events/execution-event";
+
+export type {
+	LLMGenerateOptions,
+	LLMProvider,
+	LLMResponse,
+} from "./llm/llm-provider";
+export { CachingLLMProvider } from "./llm/caching-llm-provider";
+
+export type { OutputParser } from "./parsing/output-parser";
+
+export type { CacheProvider } from "./cache/cache-provider";
+export { InMemoryCacheProvider } from "./cache/in-memory-cache-provider";
+export type { InMemoryCacheProviderOptions } from "./cache/in-memory-cache-provider";

@@ -1,6 +1,6 @@
 export interface LLMGenerateOptions {
-	systemPrompt?: string;
 	llmOptions?: Record<string, unknown>;
+	systemPrompt?: string; // Keep for potential direct use by providers, though core logic doesn't pass it
 }
 
 export interface LLMResponse {
@@ -10,7 +10,7 @@ export interface LLMResponse {
 		completionTokens?: number;
 		totalTokens?: number;
 	};
-	modelInfo?: Record<string, unknown>;
+	modelInfo?: Record<string, unknown> & { fromCache?: boolean };
 }
 
 export interface LLMProvider {
