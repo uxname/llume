@@ -5,7 +5,6 @@ import {
 	type LLMProvider,
 	type LLMResponse,
 } from "../src";
-import type { Ai0LlmRequestParams } from "../src/old-core/llm/providers/ai0/ai0-llm-provider.ts";
 
 export class Ai0 implements LLMProvider {
 	private readonly baseUrl: string;
@@ -36,7 +35,7 @@ export class Ai0 implements LLMProvider {
 			? `${options.systemPrompt} ${_prompt}`
 			: _prompt;
 
-		const params: Ai0LlmRequestParams = {
+		const params = {
 			prompt,
 			provider: this.defaultProvider,
 			randomProvider: false,
