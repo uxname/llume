@@ -35,7 +35,7 @@ class CallCountingLLMProvider implements LLMProvider {
 
 	async generate(
 		prompt: string,
-		options?: LLMGenerateOptions,
+		_options?: LLMGenerateOptions,
 	): Promise<LLMResponse> {
 		this.callCount++;
 		this.lastReceivedPrompt = prompt;

@@ -1,3 +1,4 @@
+// src/core/ai-function/index.ts
 import Handlebars from "handlebars";
 import type { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
@@ -65,6 +66,9 @@ JSON SCHEMA:
 USER QUERY:
 {{{userQuery}}}`;
 
+const USER_QUERY_PLACEHOLDER = "{{{userQuery}}}";
+const JSON_SCHEMA_PLACEHOLDER = "{{{jsonSchema}}}";
+
 export function createAiFunction<TInput, TOutput>(
 	definition: AiFunctionDefinition<TInput, TOutput>,
 	defaultContext?: ExecutionContext,
@@ -81,16 +85,39 @@ export function createAiFunction<TInput, TOutput>(
 			definition.retryOptions?.condition ?? DEFAULT_RETRY_OPTIONS.condition,
 	};
 
+	const usesDefaultJsonParser = !definition.outputParser;
 	const parser: OutputParser<TOutput> = definition.outputParser ?? {
 		parse: (rawOutput: string): Promise<TOutput> | TOutput => {
 			return parseJson<TOutput>(rawOutput);
 		},
 	};
 
-	const jsonSchemaString = generateJsonSchemaString(definition.outputSchema);
+	const jsonSchemaString = usesDefaultJsonParser
+		? generateJsonSchemaString(definition.outputSchema)
+		: null;
 
 	const mainPromptTemplateString =
 		definition.promptTemplate ?? DEFAULT_PROMPT_TEMPLATE;
+
+	// --- Template Validation ---
+	if (definition.promptTemplate) {
+		// Only validate if a custom template is provided
+		if (!mainPromptTemplateString.includes(USER_QUERY_PLACEHOLDER)) {
+			throw new PromptCompilationError(
+				`Custom 'promptTemplate' must include the user query placeholder: ${USER_QUERY_PLACEHOLDER}`,
+			);
+		}
+		if (
+			usesDefaultJsonParser &&
+			!mainPromptTemplateString.includes(JSON_SCHEMA_PLACEHOLDER)
+		) {
+			throw new PromptCompilationError(
+				`Custom 'promptTemplate' must include the JSON schema placeholder '${JSON_SCHEMA_PLACEHOLDER}' when using the default JSON output parser.`,
+			);
+		}
+	}
+	// --- End Template Validation ---
+
 	let mainPromptTemplateDelegate: Handlebars.TemplateDelegate;
 	try {
 		mainPromptTemplateDelegate = Handlebars.compile(mainPromptTemplateString, {

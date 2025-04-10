@@ -29,7 +29,7 @@ export class Ai0Provider implements LLMProvider {
 
 	async generate(
 		prompt: string,
-		options?: LLMGenerateOptions,
+		_options?: LLMGenerateOptions,
 	): Promise<LLMResponse> {
 		const params = {
 			prompt: prompt,

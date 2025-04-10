@@ -1,5 +1,4 @@
 import type { z } from "zod";
-import type { CacheProvider } from "../../cache/cache-provider";
 import type { OutputParser } from "../../parsing/output-parser";
 import type { ExecutionContext } from "../execution-context";
 import type { RetryOptions } from "../retry-options";
