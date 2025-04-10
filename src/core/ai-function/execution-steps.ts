@@ -1,4 +1,4 @@
-import Handlebars from "handlebars"; // Ensure Handlebars is imported
+import type Handlebars from "handlebars";
 import { ZodError, type ZodSchema } from "zod";
 import { ExecutionEventType } from "../../events/execution-event";
 import type {
@@ -18,21 +18,6 @@ import type { ExecutionContext } from "../execution-context";
 import type { AiFunctionDefinition } from "./types";
 
 export type PublishEventFn = (type: ExecutionEventType, data: unknown) => void;
-
-const DEFAULT_MAIN_PROMPT_TEMPLATE =
-	"{{#if systemPrompt}}{{systemPrompt}}\n\n{{/if}}{{userPromptContent}}";
-
-let defaultCompiledMainTemplate: Handlebars.TemplateDelegate | null = null;
-
-function getDefaultCompiledMainTemplate(): Handlebars.TemplateDelegate {
-	if (!defaultCompiledMainTemplate) {
-		defaultCompiledMainTemplate = Handlebars.compile(
-			DEFAULT_MAIN_PROMPT_TEMPLATE,
-			{ noEscape: true, strict: true },
-		);
-	}
-	return defaultCompiledMainTemplate;
-}
 
 export async function validateInput<TInput>(
 	input: TInput,
@@ -63,36 +48,34 @@ export async function validateInput<TInput>(
 
 export function compilePrompt<TInput>(
 	validatedInput: TInput,
-	definition: AiFunctionDefinition<TInput, unknown>, // Use unknown for TOutput here
-	userPromptTemplate: Handlebars.TemplateDelegate<TInput>,
-	mainPromptTemplateDelegate: Handlebars.TemplateDelegate | null, // Can be null if using default
-	parser: OutputParser<unknown>,
+	definition: AiFunctionDefinition<TInput, unknown>, // Keep for context
+	mainPromptTemplateDelegate: Handlebars.TemplateDelegate, // Always present (default or custom)
+	userQueryTemplateDelegate: Handlebars.TemplateDelegate<TInput>,
+	// parser: OutputParser<unknown>, // No longer needed here
+	jsonSchemaString: string | null, // Pass generated schema for default template
 	publishEvent: PublishEventFn,
 ): string {
 	publishEvent(ExecutionEventType.PROMPT_COMPILATION_START, { validatedInput });
 	try {
-		// 1. Compile user prompt content
-		const userPromptContent = userPromptTemplate(validatedInput);
+		// 1. Compile user query
+		const compiledUserQuery = userQueryTemplateDelegate(validatedInput);
 
-		// 2. Select and compile main template
-		const templateToUse =
-			mainPromptTemplateDelegate ?? getDefaultCompiledMainTemplate();
-		const finalPrompt = templateToUse({
-			systemPrompt: definition.systemPrompt,
-			userPromptContent: userPromptContent,
-		});
+		// 2. Prepare variables for the main template
+		const templateVariables = {
+			...validatedInput,
+			userQuery: compiledUserQuery, // Make compiled query available
+			jsonSchema: jsonSchemaString, // Make schema available (used by default template)
+		};
 
-		// 3. Add format instructions (if any)
-		let promptWithInstructions = finalPrompt;
-		const formatInstructions = parser.getFormatInstructions?.();
-		if (formatInstructions) {
-			promptWithInstructions += `\n\n${formatInstructions}`;
-		}
+		// 3. Compile the main template
+		const finalPrompt = mainPromptTemplateDelegate(templateVariables);
+
+		// 4. Format instructions are now part of the mainPromptTemplate (default or custom)
 
 		publishEvent(ExecutionEventType.PROMPT_COMPILATION_END, {
-			compiledPrompt: promptWithInstructions,
+			compiledPrompt: finalPrompt,
 		});
-		return promptWithInstructions;
+		return finalPrompt;
 	} catch (error: unknown) {
 		const message =
 			error instanceof Error
@@ -101,7 +84,6 @@ export function compilePrompt<TInput>(
 		const compilationError = new PromptCompilationError(message, error);
 		publishEvent(ExecutionEventType.PROMPT_COMPILATION_ERROR, {
 			validatedInput,
-			templateUsed: definition.mainPromptTemplate ? "custom" : "default",
 			error: compilationError,
 		});
 		throw compilationError;
@@ -111,18 +93,22 @@ export function compilePrompt<TInput>(
 export async function callLlm(
 	compiledPrompt: string,
 	llmProvider: LLMProvider,
-	llmOptions: LLMGenerateOptions & { cacheTtl?: number }, // Pass cacheTtl if needed by provider wrapper
+	llmOptions: LLMGenerateOptions & { cacheTtl?: number },
 	publishEvent: PublishEventFn,
 ): Promise<LLMResponse> {
 	publishEvent(ExecutionEventType.LLM_START, {
 		compiledPrompt,
-		systemPrompt: llmOptions.systemPrompt,
 		llmOptions: llmOptions.llmOptions,
-		cacheTtl: llmOptions.cacheTtl, // Log cache TTL if provided
+		cacheTtl: llmOptions.cacheTtl,
 	});
 	try {
-		// Pass all options, including potential cacheTtl, to the provider's generate method
-		const llmResponse = await llmProvider.generate(compiledPrompt, llmOptions);
+		const providerOptions: LLMGenerateOptions = {
+			llmOptions: llmOptions.llmOptions,
+		};
+		const llmResponse = await llmProvider.generate(
+			compiledPrompt,
+			providerOptions,
+		);
 		publishEvent(ExecutionEventType.LLM_END, { response: llmResponse });
 		return llmResponse;
 	} catch (error: unknown) {
@@ -201,22 +187,24 @@ export interface ExecuteSingleAttemptArgs<TInput, TOutput> {
 	input: TInput;
 	definition: AiFunctionDefinition<TInput, TOutput>;
 	context: ExecutionContext;
-	userPromptTemplate: Handlebars.TemplateDelegate<TInput>; // Renamed from compiledPromptTemplate
-	mainPromptTemplateDelegate: Handlebars.TemplateDelegate | null; // Added
+	mainPromptTemplateDelegate: Handlebars.TemplateDelegate; // Renamed
+	userQueryTemplateDelegate: Handlebars.TemplateDelegate<TInput>; // Renamed
 	parser: OutputParser<TOutput>;
 	publishEvent: PublishEventFn;
-	effectiveLlmProvider: LLMProvider; // Added to pass potentially wrapped provider
+	effectiveLlmProvider: LLMProvider;
+	jsonSchemaString: string | null; // Added
 }
 
 export async function executeSingleAttempt<TInput, TOutput>({
 	input,
 	definition,
-	context, // Keep context for potential future use inside steps
-	userPromptTemplate,
+	context,
 	mainPromptTemplateDelegate,
+	userQueryTemplateDelegate,
 	parser,
 	publishEvent,
-	effectiveLlmProvider, // Use this provider
+	effectiveLlmProvider,
+	jsonSchemaString, // Added
 }: ExecuteSingleAttemptArgs<TInput, TOutput>): Promise<TOutput> {
 	const validatedInput = await validateInput(
 		input,
@@ -226,22 +214,22 @@ export async function executeSingleAttempt<TInput, TOutput>({
 
 	const compiledPrompt = compilePrompt(
 		validatedInput,
-		definition, // Pass full definition
-		userPromptTemplate,
+		definition,
 		mainPromptTemplateDelegate,
-		parser,
+		userQueryTemplateDelegate,
+		// parser, // No longer needed here
+		jsonSchemaString, // Pass schema string
 		publishEvent,
 	);
 
 	const llmOptions: LLMGenerateOptions & { cacheTtl?: number } = {
-		systemPrompt: definition.systemPrompt, // System prompt is now handled by main template
 		llmOptions: definition.llmOptions,
-		cacheTtl: definition.cacheOptions?.ttl, // Pass cache TTL from definition
+		cacheTtl: definition.cacheOptions?.ttl,
 	};
 
 	const llmResponse = await callLlm(
 		compiledPrompt,
-		effectiveLlmProvider, // Use the passed provider
+		effectiveLlmProvider,
 		llmOptions,
 		publishEvent,
 	);

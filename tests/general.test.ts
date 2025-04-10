@@ -45,7 +45,7 @@ describe("General tests", () => {
 			inputSchema: CalculatorInputSchema,
 			outputSchema: CalculatorOutputSchema,
 			// Простой промпт. Инструкции по формату JSON добавятся автоматически.
-			promptTemplate: "Посчитай следующее выражение: {{{expression}}}",
+			userQueryTemplate: "Посчитай следующее выражение: {{{expression}}}",
 			// outputParser: не указан, используется дефолтный JSON
 			retryOptions: { maxAttempts: 3, delayMs: 200 }, // Попробуем 2 раза максимум
 		};
