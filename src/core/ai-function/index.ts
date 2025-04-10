@@ -49,22 +49,21 @@ function generateJsonSchemaString<TOutput>(
 	}
 }
 
-const DEFAULT_PROMPT_TEMPLATE = `You are a helpful AI assistant. Respond accurately to the user's request.
+const DEFAULT_PROMPT_TEMPLATE = `You are a helpful AI assistant. You need to respond accurately to the user's query.
 {{#if jsonSchema}}
 
-RESPONSE FORMATTING INSTRUCTIONS:
-You MUST respond ONLY with a valid JSON object that strictly adheres to the JSON Schema provided below.
+RESPONSE INSTRUCTIONS:
+You MUST respond ONLY with a valid JSON object that strictly matches to the JSON Schema provided below.
 Do NOT include any explanatory text, comments, apologies, or markdown formatting (like \`\`\`) before or after the JSON object.
 The JSON object MUST be the only content in your response.
 
 JSON SCHEMA:
-\`\`\`json
 {{{jsonSchema}}}
-\`\`\`
 {{/if}}
 
 USER QUERY:
-{{{userQuery}}}`;
+{{{userQuery}}}
+`;
 
 const USER_QUERY_PLACEHOLDER = "{{{userQuery}}}";
 const JSON_SCHEMA_PLACEHOLDER = "{{{jsonSchema}}}";
