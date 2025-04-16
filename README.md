@@ -6,6 +6,39 @@
 
 **LLume** is a lightweight, type-safe Node.js framework designed to streamline the creation and execution of structured, predictable interactions with Large Language Models (LLMs). It emphasizes developer experience through strong typing, clear abstractions, and built-in utilities for common LLM workflow patterns.
 
+## TLDR - Quick Examples
+
+### Simple AI calculator
+
+```typescript
+import { z } from "zod";
+import { createAiFunction } from "llume";
+
+// 1. Define schemas
+const schemas = {
+	input: z.object({
+		expression: z.string()
+	}),
+	output: z.object({
+		result: z.number().describe("The numerical result of the calculation")
+	})
+};
+
+// 2. Create AI function
+const calculate = createAiFunction({
+	functionId: "calculator",
+	inputSchema: schemas.input,
+	outputSchema: schemas.output,
+	userQueryTemplate: "Calculate: {{{expression}}}",
+}, {
+	llmProvider: new YourLLMProvider(),
+});
+
+// 3. Use!
+const result = await calculate({ expression: "10 * (5 + 3)" });
+console.log(result.result); // 80
+```
+
 ## Core Concept: `AiFunction`
 
 The central abstraction in LLume is the `AiFunction`. It represents a single, reusable task delegated to an LLM, defined by:
